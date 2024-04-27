@@ -4,15 +4,15 @@ This is an open-source trivia/learning system.
 It consists of two parts: the presenter and the remote.
 The presenter is a laptop and the remotes are based around the ESP32-S3 SoC.
 
-## Motiviation
+## Motivation
 
-I was teaching a group high school age kids (mostly freshmen and sophmores) and existing trivia solutions (Quizlet, ) that had worked for seniors were no longer viable.
+I was teaching a group high school age kids (mostly freshmen and sophomores) and existing trivia solutions (Quizlet, ) that had worked for seniors were no longer viable.
 Mostly because some students had phones and some did not. 
 Even some who had phones had a highly locked down down phone that couldn't access websites.
 
 ## Goals
 
-- A strurdy and simple remote that students can intuitively use
+- A sturdy and simple remote that students can intuitively use
 - Run locally in environments with flakey or no internet connection
 - An easy to use presenter interface that integrates with any other audiovisual elements of teaching
 - Remotes belong to the teacher not the student
@@ -57,7 +57,7 @@ It may include some additional sensors or outputs such as:
 
 - Gyro
 - Simple shake sensor
-- Vibration motor (for notifiying of state changes)
+- Vibration motor (for notifying of state changes)
 - LEDs
 
 Currently, there aren't any of these sensors/output devices planned but the code/pcb should be flexible and allow future enhancement.
@@ -99,9 +99,9 @@ While a remote is participating, it answers basic system updates from the server
 It will send heartbeat pings which include current state and battery level.
 The above version mechanism is part of that system level commands.
 While participating, the remote has a secondary state machine system that run many state machines.
-The presenter is authorative and can send a message putting a remote into a given app state.
+The presenter is authoritative and can send a message putting a remote into a given app state.
 These are known as "apps" and will be documented separately.
-These apps can run on all remotes simultaniously or on a single remote.
+These apps can run on all remotes simultaneously or on a single remote.
 
 Some example apps are:
 
@@ -131,7 +131,7 @@ Once a button has been pressed it goes into a confirmed mode that accepts no fur
 ### Presenter
 
 The presenter runs on a laptop (or perhaps iPad) and shows visuals.
-It is authorative and determines state.
+It is authoritative and determines state.
 Remotes can have some internal logic but most processing happens on the server.
 
 It is a nodeJS server serving a vueJS/vite webapp.
@@ -181,3 +181,39 @@ State is managed inside the server, not the webapp.
 The vue webapp is almost considered a different type of remote and displays more content but can also control the flow of the presentation.
 
 ### Remote <-> Presenter Communications
+
+Communications between the remote and presenter are still in progress and there are two alternatives being explored.
+
+#### ESP-Now with Serial Bridge
+
+https://www.espressif.com/en/solutions/low-power-solutions/esp-now
+
+Pros:
+- Very low power usage
+- Presenter can remain connected to WiFi
+
+Cons:
+- requires base station to communicate ESP-Now
+- Additional translation layer between presenter and ESP through serial
+- ESP-Now messages are 250 bytes in length, json likely isn't efficient in space
+- 20 device limit for connection
+- Find and adding nodes to mesh is harder
+
+
+#### PainlessMesh
+
+https://gitlab.com/painlessMesh/painlessMesh
+
+Pros:
+- Messages are JSON based, making interop between presenter and remotes easy
+- No limit on mesh participants
+- Heartbeat is built into mesh
+- OTA built into server, makes OTA easier
+
+Cons:
+- Mesh is easy to destabilize with many concurrent messages
+- Messages are not guaranteed to be delivered, resending/acking might be needed, making state machine harder to write
+- Initial setup of the WiFi network can be hard
+- Presenter may or may not be able to be connected to WiFi
+
+
