@@ -1,45 +1,66 @@
-# Bun + Vue 3 + TypeScript + Vite Template
+# Vite Tauri Desktop Application Template
 
-<p align="center">
-  <img width="400" height="140" src="./assets/bun_vite.svg">
-</p>
+This is a starter template for those who want to make a desktop application with web technologies. This template uses the below stack.
 
-[![CI](https://github.com/sistematico/bun-vite-template/actions/workflows/ci.yml/badge.svg)](https://github.com/sistematico/bun-vite-template/actions/workflows/ci.yml)
+### Vite.js
+Vite.js is a new modern bundler for javascript which is blazing fast and includes many sensible defaults.
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+### Tauri
+Tauri is a new modern technology to turn your web apps into a desktop app for multiple platforms (Windows, MacOS, Linux, android and ios soon). Tauri apps have very small file size and tiny memory consumption.
 
-## Setup
+### Vue 3
+Vue.js is an incremental frontend framework which is an absolute joy to work with. It has seen very impressive improvements in version 3 including Composition Api, script setup, dynamic css binding and ... .
 
-Clone:
+### Vuetify 3
+Vuetify is arguably the best component library for Vue 3 and is currently in alpha stage but will soon be ready for production. Lots of premade components will make your job as application developer easier and more fun.
 
-```bash
-git clone git@github.com:sistematico/bun-vite-template.git
-```
+## Installation
+- Ready your workspace according to Tauri. [Tauri Getting Started](https://tauri.app/v1/guides/getting-started/prerequisites/)
 
-Install dependencies:
+  - Note: You only need to install global things such as Rust and other OS level packages. Any thing related to application itself is already installed and ready for you.
 
-```bash
-bun install # or bun i
-```
+- Clone repository
+  - `git clone https://github.com/yooneskh/vite-tauri-template app-name`
 
-Development:
+- `yarn` (or `npm install` but yarn is preferred)
 
-```bash
-code .
-bun dev # or bun run dev
-```
+- Modify these files according to your app.
 
-## Recommended IDE Setup
+  - ./index.html
+  - ./package.json
+  - ./public/favicon.svg
+  - ./src-tauri/icons/*
+  - ./src-tauri/tauri.conf.json
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) + [Bun for VSCode](https://marketplace.visualstudio.com/items?itemName=oven.bun-vscode).
+## Development
 
-## Type Support For `.vue` Imports in TS
+There are two ways you can develo your app.
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+### In Browser
+- `yarn serve`
+  - launches vite and you can test and develop your app in the browser at http://localhost:8080.
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+### In Tauri Window
 
-1. Disable the built-in TypeScript Extension
-   1. Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-   2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+Launch two terminals and in
+
+1- `yarn serve:tauri`
+
+This launches Vite and configures [Unified Network](https://github.com/yooneskh/unified-network) (which is mine) to use Tauri for api calls (to get around CORS problems).
+
+2- `yarn serve:native`
+
+This launches Tauri window and you would see your app in the native window.
+
+**Note:** There are mainly 2 differences between development in browser and in Tauri window.
+
+- One is who executes your http calls, because when in browser, you are subject to CORS rules, but when testing in Tauri mode, Tauri's native module is executing the http calls so CORS will not be a problem.
+
+- Second is the renderer engine. In browsers, it is usually the latest modern engine, but in Tauri, it will be the OS's web engine, which is good, but maybe not as good as the browsers.
+
+## Building
+
+`yarn build` builds web application and packages them with Tauri in "./src-tauri/target/releases".
+
+## License
+Do whatever you want with it!
