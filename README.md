@@ -215,5 +215,4 @@ Cons:
 - Messages are not guaranteed to be delivered, resending/acking might be needed, making state machine harder to write
 - Initial setup of the WiFi network can be hard
 - Presenter may or may not be able to be connected to WiFi
-
-
+- Does not work with captive networks
