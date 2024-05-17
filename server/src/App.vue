@@ -1,19 +1,19 @@
 <script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import HelloWorld from "./components/HelloWorld.vue";
+import { useSerialPortStore } from "./store/serial";
+import { useLessonStore } from "./store/lesson";
+
+import LessonSelector from "./components/LessonSelector.vue";
+import Presenter from "./components/Presenter.vue";
+import SerialSelector from "./components/SerialSelection.vue";
+
+const serialStore = useSerialPortStore();
+const lessonStore = useLessonStore();
 </script>
 
 <template>
-  <img alt="Vite logo" width="120" src="./assets/vite.svg" />
-  <img alt="Vue logo" width="120" src="./assets/logo.png" />
-  <img alt="Electron logo" width="120" src="./assets/electron.png" />
-  <img alt="TS logo" width="120" src="./assets/ts.png" />
-  <HelloWorld msg="Vite + Vue 3 + Electron + TypeScript" />
-  <br />
-  <p class="plugins">Plugins</p>
-  <img alt="vue router logo" width="120" src="./assets/vueRouter.png" />
-  <img alt="pinia logo" width="120" src="./assets/pinia.svg" />
+  <SerialSelector v-if="!serialStore.isReady"/>
+  <LessonSelector v-else-if="!lessonStore.isReady"/>
+  <Presenter v-else/>
 </template>
 
 <style>

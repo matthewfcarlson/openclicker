@@ -8,6 +8,7 @@
     "vite:dev": "vite",
     "vite:build": "vue-tsc --noEmit && vite build",
     "vite:preview": "vite preview",
+    "lessons": "json-ts -s ./lessons -o ./dist/lessons",
     "ts": "tsc",
     "watch": "tsc -w",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
@@ -50,12 +51,15 @@
     }
   },
   "dependencies": {
-    "vue": "^3.4.26"
+    "json-ts": "^1.6.4",
+    "serialport": "^12.0.0",
+    "vue": "^3.4.26",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.3.3",
     "concurrently": "^7.2.2",
-    "electron": "^30.0.2",
+    "electron": "^30.0.1",
     "electron-builder": "^24.13.3",
     "pinia": "^2.1.7",
     "typescript": "^5.4.5",
