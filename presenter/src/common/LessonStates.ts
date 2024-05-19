@@ -18,4 +18,6 @@ export const LessonSection = Base.extend({
 export const AnyLessonState = z.discriminatedUnion("type", [LessonIntro,LessonSection] )
 export type AnyLessonStateType = z.infer<typeof AnyLessonState>;
 
-export type LessonPlanType = AnyLessonStateType[];
+export const LessonPlan = z.array(AnyLessonState)
+
+export type LessonPlanType = z.infer<typeof LessonPlan>;

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'"> -->
+    <title>OpenClicker Presenter</title>
+    <style>
+      * /*, *::after, *::before*/ {
+        /* ~~~~~~ Disable elements dragging ~~~~~~ */
+        -webkit-user-select: none;
+        -webkit-user-drag: none;
+        -webkit-app-region: no-drag;
+      }
+      body,html { margin:0; padding: 0; height: 100%;}
+      #app, #app > * { min-height: 100vh; min-width: 100vw; box-sizing: border-box; }
+    </style>
+  </head>
+  <body>
+    <div id="app">Remote Window</div>
+    <!-- <script type="module" src="/src/electron/renderer.ts"></script> -->
+  </body>
+</html>

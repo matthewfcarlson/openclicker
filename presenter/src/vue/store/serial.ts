@@ -1,34 +1,32 @@
 import { defineStore } from 'pinia'
-import type {ElectronAPI} from '../electron/common'
+const serial = require("serialport");
 
 const serialPortStore = {
     id: 'serial',
     state: () => ({
       setup: false,
-      api: ((window as any).electronAPI as ElectronAPI),
+      api: ((window as any).electronAPI as any),
     }),
     getters: {
         isReady: (state) => {return state.setup},
     },
     actions: {
         async getPorts() {
-            // TODO: check if we recently requested the ports list
-            const ports = await this.api.listSerialPorts();
-            console.log(ports);
+            const ports = await serial.SerialPort.list();
             return ports;
         },
         async listenTo(path:string) {
-            this.api.serialMessageCallback((x)=>{
-                console.log(x);
-            })
-            await this.api.listenToPort(path);
+            // this.api.serialMessageCallback((x)=>{
+            //     console.log(x);
+            // })
+            // await this.api.listenToPort(path);
             this.setup = true;
         },
         skipListen() {
             this.setup = true;
         },
         async reset() {
-            await this.api.serialReset()
+            // await this.api.serialReset()
             this.setup = false
         }
     }
