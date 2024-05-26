@@ -52,4 +52,4 @@ jobs:
         - name: Install platformIO libraries
           run: pio lib install
         - name: Build PlatformIO Project
-          run: pio run
+          run: pio run -e bridge -e remote
