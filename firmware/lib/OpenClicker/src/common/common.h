@@ -1,5 +1,8 @@
 #include <stdint.h>
 #include <stddef.h>
+// Before importing functional, you have to clear out the unity macros
+#undef isnan
+#undef isinf
 #include <functional>
 #include "print.hpp"
 
@@ -47,8 +50,8 @@ typedef int mesh_err_t;
 
 typedef std::function<mesh_err_t(const uint8_t* mac_addr, uint8_t channel)> MeshAddPeer_t;
 typedef void (*Callback)();
-typedef std::function<mesh_err_t(const uint8_t*, const uint8_t*, size_t)> MeshSend_t;
-typedef std::function<void(const uint8_t*, const uint8_t*, size_t)> MeshReceive_t;
+typedef std::function<mesh_err_t(const uint8_t*, const uint8_t*, uint32_t)> MeshSend_t;
+typedef std::function<void(const uint8_t*, const uint8_t*, uint32_t)> MeshReceive_t;
 
 class BaseDevice {
 
@@ -59,7 +62,7 @@ private:
 
 protected:
     Print* printer;
-    void SprintMacAddress(const uint8_t mac_addr[6], char* macStr, size_t macStrSize) {
+    void SprintMacAddress(const uint8_t mac_addr[6], char* macStr, uint32_t macStrSize) {
         snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
                 mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4],
                 mac_addr[5]);
@@ -72,7 +75,7 @@ protected:
         this->rebootFunc();
     }
 
-    int MeshSend(const uint8_t* mac_addr, const uint8_t *data, size_t data_len) {
+    int MeshSend(const uint8_t* mac_addr, const uint8_t *data, uint32_t data_len) {
         if (this->meshSendFunc == nullptr) {
             this->printer->printf("WARNING: meshSendFunc is null\n");
             Reboot();
@@ -99,7 +102,7 @@ public:
 
     // Callbacks from mesh to Base Device
     virtual void MeshOnSend(const uint8_t* mac_addr, uint8_t status){};
-    virtual void MeshOnReceive(const uint8_t* mac_addr, const uint8_t *data, size_t data_size){};
+    virtual void MeshOnReceive(const uint8_t* mac_addr, const uint8_t *data, uint32_t data_size){};
 
     // Registering callbacks
     virtual void MeshRegisterSend(MeshSend_t func) {

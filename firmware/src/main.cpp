@@ -26,8 +26,8 @@ int wrapper_esp_add_peer(const uint8_t* mac, uint8_t channel) {
     return esp_now_add_peer(&peer);
 }
 
-void wrapper_esp_receive_callback(const uint8_t* mac_addr, const uint8_t *data, size_t data_len) {
-    device->MeshOnReceive(mac_addr, data, data_len);
+void wrapper_esp_receive_callback(const uint8_t* mac_addr, const uint8_t *data, int data_len) {
+    device->MeshOnReceive(mac_addr, data, (uint32_t)data_len);
 }
 
 void wrapper_esp_send_callback(const uint8_t* mac_addr, esp_now_send_status_t status) {

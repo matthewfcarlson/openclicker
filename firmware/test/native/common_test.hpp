@@ -41,10 +41,10 @@ public:
             | ((uint64_t)(from_mac[0]));
     }
 
-    int SendMessage(const uint8_t* from_mac, const uint8_t* to_mac, const uint8_t * msg, size_t msg_size) {
+    int SendMessage(const uint8_t* from_mac, const uint8_t* to_mac, const uint8_t * msg, uint32_t msg_size) {
         uint64_t fromMacId = mac_to_uint64_t(from_mac);
         uint64_t toMacId = mac_to_uint64_t(to_mac);
-        printf("Sending message of %zu bytes. %llx->%llx\n", msg_size, fromMacId, toMacId);
+        printf("Sending message of %u bytes. %llx->%llx\n", msg_size, fromMacId, toMacId);
         if (receiverMap.count(fromMacId) == 0) {
             TEST_FAIL_MESSAGE("This sender did not register");
             return MESH_ERR_INVALID_STATE;
@@ -85,7 +85,7 @@ private:
     std::map<uint64_t, bool> peers;
     FakeMesh* mesh;
     uint8_t* mac[6];
-    mesh_err_t send(const uint8_t* to_mac, const uint8_t* msg, size_t msg_size) {
+    mesh_err_t send(const uint8_t* to_mac, const uint8_t* msg, uint32_t msg_size) {
         uint64_t toMacId = FakeMesh::mac_to_uint64_t(to_mac);
         // Check if this isn't a broadcast
         if (toMacId != FakeMesh::broadcastMacId) {

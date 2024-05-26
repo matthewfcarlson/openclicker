@@ -104,7 +104,7 @@ public:
 
     }
 
-    void MeshOnReceive(const uint8_t* mac_addr, const uint8_t *data, size_t data_len)  override  {
+    void MeshOnReceive(const uint8_t* mac_addr, const uint8_t *data, uint32_t data_len) override  {
         char macStr[18] = "";
         if (data_len == 0) {
             SprintMacAddress(mac_addr, macStr, sizeof(macStr));
