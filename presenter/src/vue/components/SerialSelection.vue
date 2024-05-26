@@ -1,15 +1,25 @@
 <script setup lang="ts">
 
 import { useSerialPortStore, SerialPortInfos } from "../store/serial";
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const ports = ref([] as SerialPortInfos);
+const portTimeout = ref(null);
 const store = useSerialPortStore();
 async function selectPort(port_path: string) {
   await store.listenTo(port_path);
 }
-onMounted(async () => {
+
+async function fetchPorts() {
+  console.log("Fetching ports")
   ports.value = await store.getPorts();
+}
+onMounted(async () => {
+  fetchPorts();
+  portTimeout.value = window.setInterval(fetchPorts, 3000);
+});
+onUnmounted(async () => {
+  window.clearInterval(portTimeout.value);
 });
 
 function skipSerial() {

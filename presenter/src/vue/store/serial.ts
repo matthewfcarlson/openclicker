@@ -1,14 +1,13 @@
 import { defineStore } from 'pinia'
-const serial = require("serialport");
+const serial = require("serialport"); // eslint-disable-line
 
 const serialPortStore = {
     id: 'serial',
     state: () => ({
       setup: false,
-      api: ((window as any).electronAPI as any),
     }),
     getters: {
-        isReady: (state) => {return state.setup},
+        isReady: (state) => {return state.setup == true},
     },
     actions: {
         async getPorts() {
@@ -20,6 +19,7 @@ const serialPortStore = {
             //     console.log(x);
             // })
             // await this.api.listenToPort(path);
+            console.log(path);
             this.setup = true;
         },
         skipListen() {

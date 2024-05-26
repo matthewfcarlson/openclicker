@@ -10,16 +10,15 @@ export default defineConfig((env) => {
   const config: UserConfig = {
     build: {
       lib: {
-        entry: forgeConfigSelf.entry!,
+        entry: forgeConfigSelf.entry,
         fileName: () => '[name].js',
         formats: ['cjs'],
       },
       rollupOptions: {
-        external,
-        // external: [
-        //   'serialport',
-        //   'sqlite3'
-        // ]
+       external: [
+          'serialport',
+          ...external
+        ]
       },
     },
     plugins: [pluginHotRestart('restart')],

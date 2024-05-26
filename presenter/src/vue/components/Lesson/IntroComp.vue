@@ -3,6 +3,6 @@
 </script>
 <template>
   <div style="background-color: beige">
-    <h1>Section</h1>
+    <h1>Intro</h1>
   </div>
 </template>

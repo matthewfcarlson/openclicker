@@ -6,7 +6,6 @@ import { MakerRpm } from '@electron-forge/maker-rpm';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
-import { utils } from "@electron-forge/core";
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -28,7 +27,7 @@ function getAllTypeScriptFiles(dir: string, files: string[] = []): string[] {
 
 // Function to dynamically import all TypeScript files
 async function importTypeScriptFiles(files: string[]) {
-    let name_to_lesson_map: Map<String,any> = new Map();
+    const name_to_lesson_map: Map<string,object> = new Map();
     for (const file of files) {
         // Remove the file extension and replace \ with / for Windows compatibility
         const importPath = file.replace(/\\/g, '/').replace(/\.ts$/, '');
@@ -48,7 +47,6 @@ async function importTypeScriptFiles(files: string[]) {
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    extraResource: ["./src/lessons"],
     // appBundleId: utils.fromBuildIdentifier({ beta: 'com.openclicker.app', prod: 'com.app' })
   },
   buildIdentifier:  process.env.IS_BETA ? 'beta' : 'prod',
@@ -89,7 +87,7 @@ const config: ForgeConfig = {
     }),
   ],
   hooks: {
-    generateAssets: async (config, platform, arch) => {
+    generateAssets: async () => {
       const lesson_files = getAllTypeScriptFiles("./src/lessons");
       const lessons = await importTypeScriptFiles(lesson_files);
       fs.writeFileSync("./src/lessons/built-in-lessons.json", JSON.stringify(Object.fromEntries(lessons)));

@@ -26,10 +26,12 @@
  * ```
  */
 import { createApp } from 'vue';
-import App from '../vue/App.vue';
+import Remote from '../vue/Remote.vue';
 import { createPinia } from 'pinia';
 import 'bulma/css/bulma.css'
 
-const app = createApp(App);
+console.log("Hello from Remote!")
+
+const app = createApp(Remote);
 app.use(createPinia()) //use pinia
 app.mount('#app');

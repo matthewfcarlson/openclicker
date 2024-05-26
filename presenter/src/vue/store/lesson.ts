@@ -1,19 +1,29 @@
 import { defineStore } from 'pinia'
-const  ipcRenderer = require('electron').ipcRenderer;
+const  ipcRenderer = window.require('electron').ipcRenderer;
 import { LessonPlan, LessonPlanType } from '../../common/LessonStates';
 
 export const useLessonStore = defineStore({
     id: 'lesson',
     state: () => ({
         count: 0,
-        current_lesson: null as LessonPlanType | null,
+        current_lesson: [] as LessonPlanType,
     }),
     getters: {
-        isReady: (state) => {return state.current_lesson != null},
+        isReady: (state) => {return state.current_lesson.length > 0},
+        currentLessonState (state) {
+            if (this.isReady == false) return null;
+            if (state.count < 0 || state.count >= state.current_lesson.length) return null;
+            return state.current_lesson[state.count]
+        },
+        canAdvance: (state) => { return state.count < (state.current_lesson.length-1) },
+        canRewind: (state) => { return state.count > 0 },
     },
     actions: {
-        increment() {
-            this.count++
+        advanceLessonState() {
+            if (this.canAdvance) this.count+=1;
+        },
+        rewindLessonState() {
+            if (this.canRewind) this.count-= 1;
         },
         async attemptFileLoad(): Promise<string> {
             try {
@@ -27,9 +37,9 @@ export const useLessonStore = defineStore({
                 return "Failed to load file";
             }
         },
-        async attemptLessonLoad(raw_lesson:any): Promise<string> {
+        async attemptLessonLoad(raw_lesson:object): Promise<string> {
             try {
-                console.log(raw_lesson);
+                this.current_lesson = [];
                 const parsed_lesson_plan = LessonPlan.safeParse(raw_lesson);
                 if (parsed_lesson_plan.success == true) {
                     this.current_lesson = parsed_lesson_plan.data;

@@ -2,6 +2,7 @@
 import { ref } from "vue";
 
 import {useLessonStore} from "../store/lesson";
+import {useSerialPortStore} from "../store/serial";
 import lessons from "../../lessons/built-in-lessons.json"
 
 const errorMessage = ref("");
@@ -30,6 +31,7 @@ const loadLesson = async(lesson:any) => {
       <button class="button is-fullwidth my-3" v-for="lesson,lessonName in lessons" @click="loadLesson(lesson)"> {{ lessonName }} </button>
       <button class="button is-fullwidth my-3 is-primary" type="button" @click="openFile()">Load Lesson Plan</button>
       <div v-if="errorMessage && errorMessage.length > 0">ERROR: {{ errorMessage }}</div>
+      <button class="button is-danger" @click="useSerialPortStore().reset">Go back</button>
     </div>
   </div>
 </template>

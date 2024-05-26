@@ -40,7 +40,7 @@ const createMainWindow = () => {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
     // Open the DevTools.
   } else {
-    mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
+    mainWindow.loadFile(path.join(__dirname, `../electron/renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
   mainWindow.webContents.openDevTools();
 
@@ -74,18 +74,6 @@ app.on('activate', () => {
   }
 });
 
-app.on('web-contents-created', (event, contents) => {
-  contents.setWindowOpenHandler(({ url }) => {
-    // In this example, we'll ask the operating system
-    // to open this event's url in the default browser.
-    //
-    // See the following item for considerations regarding what
-    // URLs should be allowed through to shell.openExternal.
-
-    return { action: 'deny' }
-  })
-})
-
 app.whenReady().then(() => {
   ipcMain.handle('dialog:openFile', handleFileOpen)
   createMainWindow();
@@ -95,6 +83,7 @@ app.whenReady().then(() => {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
 const isMac = process.platform === 'darwin'
+const isDev = (MAIN_WINDOW_VITE_DEV_SERVER_URL != null);
 const template = [
   // { role: 'appMenu' }
   ...(isMac
@@ -118,16 +107,17 @@ const template = [
   {
     label: 'Window',
     submenu: [
-      {
+      ...(isDev ? [{
         label: 'New Remote Window',
         click: async () => {
           createRemoteWindow()
         },
         accelerator: process.platform === 'darwin' ? 'Shift+Cmd+R' : 'Ctrl+Shift+R',
-      },
+      }]: []),
       { role: 'minimize' },
       { role: 'zoom' },
       { role: 'close' },
+      { role: 'reload' },
       ...(isMac
         ? [
           { type: 'separator' },

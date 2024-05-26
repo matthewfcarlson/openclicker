@@ -1,16 +1,22 @@
-import {ZodDiscriminatedUnionOption, ZodTypeAny, z} from "zod";
+import {z} from "zod";
+
+export enum LessonStateNames {
+    Introduction = "intro",
+    Section = "section"
+}
+const LessonStateNamesZ = z.nativeEnum(LessonStateNames);
 
 const Base = z.object({
-    type: z.string()
+    type: LessonStateNamesZ
 })
 
 export const LessonIntro = Base.extend({
-        type: z.literal("intro"),
+        type: z.literal(LessonStateNames.Introduction),
         text: z.string()
     });
 
 export const LessonSection = Base.extend({
-        type: z.literal("section"),
+        type: z.literal(LessonStateNames.Section),
         text: z.string(),
         photo: z.string().url().optional(),
     });
