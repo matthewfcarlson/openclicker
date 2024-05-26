@@ -44,4 +44,4 @@ jobs:
           run: pip install --upgrade platformio
     
         - name: Build PlatformIO Project
-          run: pio build
+          run: pio run
