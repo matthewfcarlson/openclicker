@@ -1,6 +1,10 @@
+#include <functional>
 #include <stdint.h>
-#include "common.h"
+#include "common/common.h"
+#undef isnan     // Undefine any existing isnan macro
+#include <cmath>
 #include <chrono>
+
 
 #pragma once
 

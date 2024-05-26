@@ -1,5 +1,6 @@
 // A definition of the protocol for communicating remote to presenter
 #include <stdint.h>
+#pragma once
 #define MIN_PRESENTER_MESSAGE_ID 20
 
 enum PresenterMessageIds {

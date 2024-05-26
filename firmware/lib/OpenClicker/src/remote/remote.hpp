@@ -1,7 +1,7 @@
-#include "common.h"
+#include "common/common.h"
 #include "protocol/presenter_protocol.h"
 #include "protocol/remote_protocol.h"
-#include "periodic_task.hpp"
+#include "common/periodic_task.hpp"
 #include <functional>
 
 enum RemoteBigStates {
@@ -26,7 +26,7 @@ private:
     void MeshRequestBridge() {
         uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
         RemoteMessageBridgeRequest_t msg = { .id = BridgeRequest};
-        esp_err_t status = this->meshSendFunc(broadcast_mac, (uint8_t*)&msg, sizeof(msg));
+        int status = MeshSend(broadcast_mac, (uint8_t*)&msg, sizeof(msg));
         this->printer->printf("Sending bridge request = %x\n",status);
     }
     void MeshRequestState() {
@@ -63,7 +63,7 @@ public:
         this->printer->printf("Hello from the remote\n");
     }
 
-    void Loop() {
+    void Loop() override {
         // See how long it's been since we last updated the
         const RemoteBigStates currentBigState = bigState;
         RemoteBigStates nextBigState = bigState;
@@ -86,7 +86,7 @@ public:
         }
         else if (currentBigState == RemoteBigRebooting) {
             // Reboot the whole system
-            rebootFunc();
+            this->Reboot();
         }
 
         // Check if we have a low battery, if so
@@ -100,11 +100,11 @@ public:
         }
     }
 
-    void MeshOnSend(const uint8_t *mac_addr, uint8_t status) {
+    void MeshOnSend(const uint8_t* mac_addr, uint8_t status) override  {
 
     }
 
-    void MeshOnReceive(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
+    void MeshOnReceive(const uint8_t* mac_addr, const uint8_t *data, size_t data_len)  override  {
         char macStr[18] = "";
         if (data_len == 0) {
             SprintMacAddress(mac_addr, macStr, sizeof(macStr));
@@ -117,8 +117,12 @@ public:
         }
         if (msgType == BridgeResponse) {
             // Add this node as a peer and mark that we found a bridge
-            this->meshAddPeerFunc(mac_addr, 0);
+            MeshAddPeer(mac_addr, 0);
             this->foundBridge = true;
         }
+    }
+
+    MeshReceive_t CreateReceiveCallback() override {
+        return std::bind(&RemoteDevice::MeshOnReceive, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
     }
 };

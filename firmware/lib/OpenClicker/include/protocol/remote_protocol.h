@@ -1,5 +1,6 @@
 // A definition of the protocol for communicating remote to remote
 #include <stdint.h>
+#pragma once
 
 enum RemoteMessageIds {
     BridgeRequest = 1,

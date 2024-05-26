@@ -3,7 +3,7 @@
 // #include "presenter_protocol.h"
 // #include "remote_protocol.h"
 
-// void bridgeOnRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
+// void bridgeOnRecv(const uint8_t* mac_addr, const uint8_t *data, int data_len) {
 //     String output;
 //     char macStr[18];
 //     snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
@@ -35,7 +35,7 @@
 //         ESPNow.send_message((uint8_t*)mac_addr, (uint8_t*)&msg, sizeof(msg));
 //     }
 // }
-// void bridgeOnSend(const uint8_t *mac_addr, esp_now_send_status_t status){
+// void bridgeOnSend(const uint8_t* mac_addr, esp_now_send_status_t status){
 //      char macStr[18];
 //     snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
 //              mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4],
