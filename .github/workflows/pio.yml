@@ -1,6 +1,10 @@
 name: platform-io-build-and-test
 run-name: Test and Build the Firmware
-on: [push]
+on:
+  push:
+    branches: [ develop, main ]
+  pull_request:
+    branches: [ develop, main ]
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -20,7 +24,9 @@ jobs:
             python-version: '3.11'
         - name: Install PlatformIO Core
           run: pip install --upgrade platformio
-  
+        # It is important to first install the libraries before compiling, since otherwise compilation might fail to find the just-installed libraries
+        - name: Install platformIO libraries
+          run: pio lib install
         - name: Test PlatformIO Project
           run: pio test
 
@@ -42,6 +48,8 @@ jobs:
             python-version: '3.11'
         - name: Install PlatformIO Core
           run: pip install --upgrade platformio
-    
+        # It is important to first install the libraries before compiling, since otherwise compilation might fail to find the just-installed libraries
+        - name: Install platformIO libraries
+          run: pio lib install
         - name: Build PlatformIO Project
           run: pio run
