@@ -1,5 +1,5 @@
 name: platform-io-build-and-test
-run-name: ${{ github.actor }} is learning GitHub Actions
+run-name: Test and Build the Firmware
 on: [push]
 jobs:
   test:
@@ -23,3 +23,25 @@ jobs:
   
         - name: Test PlatformIO Project
           run: pio test
+
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+        run:
+            working-directory: ./firmware
+    steps:
+        - uses: actions/checkout@v3
+        - uses: actions/cache@v3
+            with:
+            path: |
+                ~/.cache/pip
+                ~/.platformio/.cache
+            key: ${{ runner.os }}-pio
+        - uses: actions/setup-python@v4
+            with:
+            python-version: '3.11'
+        - name: Install PlatformIO Core
+            run: pip install --upgrade platformio
+    
+        - name: Build PlatformIO Project
+            run: pio build
