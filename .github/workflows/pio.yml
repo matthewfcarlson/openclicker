@@ -1,5 +1,4 @@
 name: platform-io-build-and-test
-run-name: Test and Build the Firmware
 on:
   push:
     branches: [ develop, main ]
