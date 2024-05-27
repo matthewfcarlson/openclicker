@@ -20,7 +20,7 @@ BaseDevice* device = new RemoteDevice(&Serial, abort);
 // Helpful wrapper to make creating a peer easier
 int wrapper_esp_add_peer(const uint8_t* mac, uint8_t channel) {
     esp_now_peer_info_t peer = {};
-    std::memcpy(peer.peer_addr, mac, sizeof(peer.peer_addr));
+    memcpy(peer.peer_addr, mac, sizeof(peer.peer_addr));
     peer.channel = channel;
     peer.ifidx = WIFI_IF_STA;
     return esp_now_add_peer(&peer);

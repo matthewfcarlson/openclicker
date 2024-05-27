@@ -2,6 +2,7 @@
 #include <common/common.h>
 #include <functional>
 #include <map>
+#include <inttypes.h>
 
 void cout_print(const char* buffer, size_t size) {
     if (size == 0) return;
@@ -44,7 +45,7 @@ public:
     int SendMessage(const uint8_t* from_mac, const uint8_t* to_mac, const uint8_t * msg, uint32_t msg_size) {
         uint64_t fromMacId = mac_to_uint64_t(from_mac);
         uint64_t toMacId = mac_to_uint64_t(to_mac);
-        printf("Sending message of %u bytes. %llx->%llx\n", msg_size, fromMacId, toMacId);
+        printf("Sending message of %u bytes. %"PRIu64"->%%"PRIu64"\n", msg_size, fromMacId, toMacId);
         if (receiverMap.count(fromMacId) == 0) {
             TEST_FAIL_MESSAGE("This sender did not register");
             return MESH_ERR_INVALID_STATE;
@@ -53,7 +54,7 @@ public:
         else if (toMacId == broadcastMacId) {
             for (auto const& x : receiverMap) {
                 if (x.first == fromMacId) continue;
-                printf("Broadcasting to %llx\n", x.first);
+                printf("Broadcasting to %"PRIu64"\n", x.first);
                 x.second(from_mac, msg, msg_size);
             }
             return MESH_OK;
@@ -75,7 +76,7 @@ public:
         if (receiverMap.count(toMacId) == 1) {
             TEST_FAIL_MESSAGE("This participant registered twice");
         }
-        printf("Adding receiver %llx\n", toMacId);
+        printf("Adding receiver %"PRIu64"\n", toMacId);
         receiverMap[toMacId] = callback;
     }
 };
@@ -120,7 +121,7 @@ private:
 
 public:
     FakeMeshCommunicator(FakeMesh* mesh, uint8_t* mac) : mesh(mesh) {
-        std::memcpy(this->mac, mac, sizeof(this->mac));
+        memcpy(this->mac, mac, sizeof(this->mac));
     }
 
     void registerDevice(BaseDevice* device) {
