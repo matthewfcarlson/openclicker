@@ -49,6 +49,7 @@ async function importTypeScriptFiles(files: string[]) {
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
+    executableName: "openclicker",
     // appBundleId: utils.fromBuildIdentifier({ beta: 'com.openclicker.app', prod: 'com.app' })
   },
   buildIdentifier:  process.env.IS_BETA ? 'beta' : 'prod',
