@@ -104,3 +104,11 @@ jobs:
         with:
           name: presenter-windpws
           path: ./presenter/out/prod/make/zip/win32/*/*.zip
+
+  publish-release:
+    runs-on: linux-latest
+    needs: [firmware, presenter,presenter-windows]
+    steps:
+      - uses: actions/download-artifact@v4
+      - name: Display structure of downloaded files
+        run: ls -R
