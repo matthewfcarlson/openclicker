@@ -72,4 +72,4 @@ jobs:
       - name: Install Node Modules
         run: bun install
       - name: Bun Build windows
-        run: bun run make -a universal -p windows
+        run: bun run make -a universal -p win32
