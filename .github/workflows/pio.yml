@@ -23,6 +23,11 @@ jobs:
             python-version: '3.11'
         - name: Install PlatformIO Core
           run: pip install --upgrade platformio
+        - name: Install GCC
+          run:   |
+            sudo apt update
+            sudo apt install gcc-10 g++-10
+          shell: bash
         # It is important to first install the libraries before compiling, since otherwise compilation might fail to find the just-installed libraries
         - name: Install platformIO libraries
           run: pio lib install
