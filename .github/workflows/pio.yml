@@ -35,6 +35,22 @@ jobs:
           run: pio test
         - name: Build PlatformIO Project
           run: pio run -e bridge -e remote
+        - name: Upload bridge artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: firmware-bridge
+            path: |
+              ./firmware/.pio/build/bridge/*.bin
+              ./firmware/.pio/build/bridge/*.elf
+              ./firmware/.pio/build/bridge/*.map
+        - name: Upload remote artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: firmware-remote
+            path: |
+              ./firmware/.pio/build/remote/*.bin
+              ./firmware/.pio/build/remote/*.elf
+              ./firmware/.pio/build/remote/*.map
   presenter:
     runs-on: ubuntu-latest
     defaults:
@@ -53,8 +69,18 @@ jobs:
         run: bun install
       - name: Bun Build macOS
         run: bun run make -a arm64 -a x64 -p darwin
+      - name: Upload linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: presenter-macos
+          path: ./presenter/out/prod/make/zip/darwin/*/*.zip
       - name: Bun Build linux
         run: bun run make -a arm64 -a x64 -p linux
+      - name: Upload linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: presenter-linux
+          path: ./presenter/out/prod/make/zip/linux/*/*.zip
   presenter-windows:
     runs-on: windows-latest
     defaults:
@@ -73,3 +99,8 @@ jobs:
         run: bun install
       - name: Bun Build windows
         run: bun run make -a x64 -a arm64 -p win32
+      - name: Upload windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: presenter-windpws
+          path: ./presenter/out/prod/make/zip/win32/*/*.zip
