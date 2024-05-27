@@ -1,4 +1,4 @@
-name: platform-io-build-and-test
+name: build-and-test-and-release
 on:
   push:
     branches: [ develop, main ]
@@ -72,4 +72,4 @@ jobs:
       - name: Install Node Modules
         run: bun install
       - name: Bun Build windows
-        run: bun run make -a universal -p win32
+        run: bun run make -a x64 -a arm64 -p win32
