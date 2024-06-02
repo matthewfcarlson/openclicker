@@ -30,7 +30,7 @@ mergeInto(LibraryManager.library, {
     },
 
     presenter_relay: function(raw_msg) {
-      const msg = UTF8ToString(url);
+      const msg = UTF8ToString(raw_msg);
       console.log("Presenter relay", msg);
     },
   

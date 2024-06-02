@@ -114,6 +114,9 @@ public:
 
     virtual MeshReceive_t CreateReceiveCallback() = 0;
 
+    virtual void ButtonPressed(uint8_t index) {}
+    virtual void ButtonReleased(uint8_t index) {}
+
 };
 
 #endif

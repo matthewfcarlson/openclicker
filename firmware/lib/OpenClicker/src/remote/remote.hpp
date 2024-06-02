@@ -146,4 +146,12 @@ public:
     MeshReceive_t CreateReceiveCallback() override {
         return std::bind(&RemoteDevice::MeshOnReceive, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
     }
+
+    void ButtonPressed(uint8_t index) override {
+        PresenterRemoteButtonPressed_t msg = {
+            .id = RemoteButtonPressed,
+            .button_id = index
+        };
+        MeshSend(bridgeMac, (uint8_t*)&msg, sizeof(msg));
+    }
 };

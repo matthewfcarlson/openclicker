@@ -85,13 +85,48 @@ void draw_frame(double t, double dt)
   // text
   fill_text(190.f, HEIGHT*2/5+80.f, 1.f, 0.f, 0.f, 1.f, "MERRY XMAS", 64.f, 64, true);
 }
+EM_BOOL webglcontext_callback(int eventType, const void *reserved, void *userData) {
+  printf("%s.\n", emscripten_event_type_to_string(eventType));
+
+  return 0;
+}
+
+void reboot_unexpected() {
+  emscripten_throw_string("Unexpected reboot");
+}
+
+RemoteDevice* remote;
+BridgeDevice* bridge;
+JSBridgeTransport* presenter;
+
+void loop(double t, double dt) {
+  draw_frame(t, dt);
+  remote->Loop();
+  bridge->Loop();
+}
+
+#define KEYDOWN_EVENT_ID  2
+#define KEYUP_EVENT_ID 3
+#define NUMBER_1_KEYCODE 49
+#define NUMBER_2_KEYCODE 50
+#define NUMBER_3_KEYCODE 51
+#define NUMBER_4_KEYCODE 52
 
 EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *e, void *userData) {
-  printf("%s, key: \"%s\", code: \"%s\", location: %u,%s%s%s%s repeat: %d, locale: \"%s\", char: \"%s\", charCode: %u, keyCode: %u, which: %u, timestamp: %lf\n",
-    emscripten_event_type_to_string(eventType), e->key, e->code, e->location,
-    e->ctrlKey ? " CTRL" : "", e->shiftKey ? " SHIFT" : "", e->altKey ? " ALT" : "", e->metaKey ? " META" : "",
-    e->repeat, e->locale, e->charValue, e->charCode, e->keyCode, e->which,
-    e->timestamp);
+  if (e->keyCode >= NUMBER_1_KEYCODE && e->keyCode <= NUMBER_4_KEYCODE) {
+    printf("%x%s, key: \"%s\", code: \"%s\", location: %u,%s%s%s%s repeat: %d, locale: \"%s\", char: \"%s\", charCode: %u, keyCode: %u, which: %u, timestamp: %lf\n", eventType,
+      emscripten_event_type_to_string(eventType), e->key, e->code, e->location,
+      e->ctrlKey ? " CTRL" : "", e->shiftKey ? " SHIFT" : "", e->altKey ? " ALT" : "", e->metaKey ? " META" : "",
+      e->repeat, e->locale, e->charValue, e->charCode, e->keyCode, e->which,
+      e->timestamp);
+    uint8_t index = e->keyCode - NUMBER_1_KEYCODE;
+    if (eventType == KEYDOWN_EVENT_ID) {
+      remote->ButtonPressed(index);
+    }
+    if (eventType == KEYUP_EVENT_ID) {
+      remote->ButtonReleased(index);
+    }
+  }
   return 0;
 }
 
@@ -116,26 +151,6 @@ EM_BOOL touch_callback(int eventType, const EmscriptenTouchEvent *e, void *userD
   }
 
   return 0;
-}
-
-EM_BOOL webglcontext_callback(int eventType, const void *reserved, void *userData) {
-  printf("%s.\n", emscripten_event_type_to_string(eventType));
-
-  return 0;
-}
-
-void reboot_unexpected() {
-  emscripten_throw_string("Unexpected reboot");
-}
-
-RemoteDevice* remote;
-BridgeDevice* bridge;
-JSBridgeTransport* presenter;
-
-void loop(double t, double dt) {
-  draw_frame(t, dt);
-  remote->Loop();
-  bridge->Loop();
 }
 
 extern "C" {

@@ -4,7 +4,7 @@
 #define MIN_PRESENTER_MESSAGE_ID 20
 
 enum PresenterMessageIds {
-    ButtonPressed = MIN_PRESENTER_MESSAGE_ID,
+    RemoteButtonPressed = MIN_PRESENTER_MESSAGE_ID,
     RemoteRequestState,
     PresenterSetState,
 };
