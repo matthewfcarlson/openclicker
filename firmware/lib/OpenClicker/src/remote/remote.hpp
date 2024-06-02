@@ -7,6 +7,7 @@
 enum RemoteBigStates {
     RemoteBigInit, // Startup state
     RemoteBigConnecting, // Quickly moves to Connecting
+    RemoteBigConnected, // We are connected to a bridge, but we aren't participating
     RemoteBigParticipating,
     RemoteBigLowBattery,
     RemoteBigOtaNeeded,
@@ -20,17 +21,20 @@ class RemoteDevice: public BaseDevice {
 private:
 
     PeriodicTask* bridgeRequestTask;
+    PeriodicTask* presenterRequestTask;
     RemoteBigStates bigState = RemoteBigInit;
-    bool foundBridge = false;
-
+    uint8_t bridgeMac[6] = {0};
+    char littleState[32] = {0};
+ 
     void MeshRequestBridge() {
         uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
         RemoteMessageBridgeRequest_t msg = { .id = BridgeRequest};
         int status = MeshSend(broadcast_mac, (uint8_t*)&msg, sizeof(msg));
-        this->printer->printf("Sending bridge request = %x\n",status);
     }
-    void MeshRequestState() {
+    void MeshPresenterRequestState() {
         // TODO: request the current state from the presenter
+        PresenterRemoteRequestState_t msg = { .id = RemoteRequestState};
+        int status = MeshSend(bridgeMac, (uint8_t*)&msg, sizeof(msg));
     }
 
     void DisplaySetToConnecting() {
@@ -53,6 +57,7 @@ public:
 
     RemoteDevice(Print* printer, Callback rebootFunc): BaseDevice(printer, rebootFunc) {
         bridgeRequestTask = new PeriodicTask(1000, std::bind(&RemoteDevice::MeshRequestBridge, this));
+        presenterRequestTask = new PeriodicTask(1000, std::bind(&RemoteDevice::MeshPresenterRequestState, this));
     };
 
     RemoteBigStates getBigState() {
@@ -68,20 +73,24 @@ public:
         const RemoteBigStates currentBigState = bigState;
         RemoteBigStates nextBigState = bigState;
         if (currentBigState == RemoteBigInit) {
-            foundBridge = false;
+            bzero(bridgeMac, sizeof(bridgeMac));
             // Setup the screen 
             nextBigState = RemoteBigConnecting;
         }
         else if (currentBigState == RemoteBigConnecting) {
-            if (foundBridge) {
-                nextBigState = RemoteBigParticipating;
+            if (bridgeMac[0] != 0 && bridgeMac[1] != 0) {
+                nextBigState = RemoteBigConnected;
                 // Set the screen to show we are connected
                 DisplaySetConnected();
-                // Request what state we should be in from the presenter
-                MeshRequestState();
             }
             else {
                 this->bridgeRequestTask->Check();
+            }
+        }
+        else if (currentBigState == RemoteBigConnected) {
+            this->presenterRequestTask->Check();
+            if (littleState[0] != 0) {
+                nextBigState = RemoteBigParticipating;
             }
         }
         else if (currentBigState == RemoteBigRebooting) {
@@ -115,11 +124,23 @@ public:
         if (msgType == BridgeRequest) {
             // Don't do anything
         }
-        if (msgType == BridgeResponse) {
+        // TODO: check that this message comes from the bridge?
+        else if (msgType == BridgeResponse) {
             // Add this node as a peer and mark that we found a bridge
             MeshAddPeer(mac_addr, 0);
-            this->foundBridge = true;
+            memcpy(bridgeMac, mac_addr, sizeof(bridgeMac));
         }
+        else if (msgType == PresenterSetState) {
+            // We had our state set, we should be presenting if we aren't already
+            // TODO: create a macro that wraps this check
+            // assert(sizeof(PresenterSetState_t) == data_len);
+            PresenterSetState_t* state = (PresenterSetState_t*)data;
+            strncpy(this->littleState, state->state_name, sizeof(this->littleState));
+        }
+        else {
+            this->printer->printf("Unknown message %d\n", msgType);
+        }
+
     }
 
     MeshReceive_t CreateReceiveCallback() override {

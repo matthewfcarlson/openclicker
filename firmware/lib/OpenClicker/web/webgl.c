@@ -3,7 +3,10 @@
 #include <emscripten/html5.h>
 #include <string.h>
 
+void upload_unicode_char_to_texture(int unicodeChar, int charSize, int applyShadow);
+void load_texture_from_url(GLuint texture, const char *url, int *outWidth, int *outHeight);
 void request_animation_frame_loop(EM_BOOL (*cb)(double time, void *userData), void *userData);
+float find_character_pair_kerning(unsigned int ch1, unsigned int ch2, int charSize);
 
 static EMSCRIPTEN_WEBGL_CONTEXT_HANDLE glContext;
 static GLuint quad, colorPos, matPos, solidColor;
@@ -157,7 +160,7 @@ static Texture *find_or_cache_url(const char *url)
     {
       textures[i].url = strdup(url);
       textures[i].texture = create_texture();
-      // load_texture_from_url(textures[i].texture, url, &textures[i].w, &textures[i].h);
+      load_texture_from_url(textures[i].texture, url, &textures[i].w, &textures[i].h);
       return textures+i;
     }
   return 0; // fail
@@ -192,7 +195,7 @@ static Glyph *find_or_cache_character(unsigned int ch, int charSize, int shadow)
       glyphs[i].charSize = charSize;
       glyphs[i].shadow = shadow;
       glyphs[i].texture = create_texture();
-      // upload_unicode_char_to_texture(ch, charSize, shadow);
+      upload_unicode_char_to_texture(ch, charSize, shadow);
       return glyphs+i;
     }
   return 0; // fail
@@ -219,7 +222,7 @@ static float get_character_pair_kerning(unsigned int ch1, unsigned int ch2, int 
     if (kerningPairs[i].ch1 == ch1 && kerningPairs[i].ch2 == ch2 && kerningPairs[i].charSize == charSize)
       return kerningPairs[i].kerning;
   }
-  float kerning = 10; // find_character_pair_kerning(ch1, ch2, charSize);
+  float kerning = find_character_pair_kerning(ch1, ch2, charSize);
   kerningPairs[i].ch1 = ch1;
   kerningPairs[i].ch2 = ch2;
   kerningPairs[i].charSize = charSize;
@@ -239,6 +242,6 @@ void EMSCRIPTEN_KEEPALIVE fill_text(float x0, float y0, float r, float g, float 
     char ch = *str++;
     fill_char(x0, y0, r, g, b, a, ch, charSize, shadow);
     char next = *str;
-    x0 += 1; //get_character_pair_kerning(ch, next, charSize);
+    x0 += get_character_pair_kerning(ch, next, charSize);
   }
 }

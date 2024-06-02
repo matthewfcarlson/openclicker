@@ -383,6 +383,17 @@ class VoidPrinter: public Print {
 public:
     VoidPrinter() {}
     size_t write(uint8_t c) {
+        return 0;
+    }
+    size_t write(const char* buffer, size_t size) {
+        return 0;
+    }
+};
+
+class PrintfPrinter: public Print {
+public:
+    PrintfPrinter() {}
+    size_t write(uint8_t c) {
         cout_print((const char*)&c, 1);
         return 0;
     }

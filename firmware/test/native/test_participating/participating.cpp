@@ -3,6 +3,7 @@
 #include <remote/remote.hpp>
 #include <bridge/bridge.hpp>
 #include <test/fakemesh.hpp>
+#include <test/fakepresenter.hpp>
 #include <vector>
 #include <algorithm>
 
@@ -32,19 +33,21 @@ void test_create_bridge_and_remote(void) {
     remote->PreSetup();
     bridge->Setup();
     remote->Setup();
-    for (int i=0; i< 500; i++) {
+    for (int i=0; i< 100; i++) {
         remote->Loop();
         bridge->Loop();
     }
 
     // Make sure we are participating by this point
-    TEST_ASSERT_EQUAL_INT(remote->getBigState(), RemoteBigParticipating);
+    TEST_ASSERT_EQUAL_INT(remote->getBigState(), RemoteBigConnected);
 }
 
 void test_create_bridge_and_two_remotes(void) {
 
     FakeMesh* mesh = new FakeMesh(100);
     std::vector<BaseDevice*> listOfDevices = {};
+    // Fake presenter
+    FakePresenterTransport* transport = new FakePresenterTransport();
     // Remote
     RemoteDevice* remote = new RemoteDevice(VoidPrint, reboot_unexpected);
     uint8_t remote_mac[] = {0xAB, 0xBC, 0xCD, 0xDE, 0xEF, 0x00};
@@ -58,7 +61,7 @@ void test_create_bridge_and_two_remotes(void) {
     remote2_comm->registerDevice(remote2);
     listOfDevices.push_back(remote2);
     // Bridge
-    BridgeDevice* bridge = new BridgeDevice(VoidPrint, reboot_unexpected);
+    BridgeDevice* bridge = new BridgeDevice(VoidPrint, reboot_unexpected, transport);
     listOfDevices.push_back(bridge);
     uint8_t bridge_mac[] = {0x01, 0x12, 0x23, 0x34, 0x45, 0x56};
     FakeMeshCommunicator* bridge_comm = new FakeMeshCommunicator(mesh, bridge_mac);
@@ -67,7 +70,7 @@ void test_create_bridge_and_two_remotes(void) {
     std::for_each(listOfDevices.begin(), listOfDevices.end(), [](BaseDevice* x){ x->PreSetup(); });
     std::for_each(listOfDevices.begin(), listOfDevices.end(), [](BaseDevice* x){ x->Setup(); });
     bridge->Setup();
-    for (int i=0; i< 500; i++) std::for_each(listOfDevices.begin(), listOfDevices.end(), [](BaseDevice* x){ x->Loop(); });
+    for (int i=0; i< 100; i++) std::for_each(listOfDevices.begin(), listOfDevices.end(), [](BaseDevice* x){ x->Loop(); });
     // Make sure we are participating by this point
     TEST_ASSERT_EQUAL_INT(remote->getBigState(), RemoteBigParticipating);
     TEST_ASSERT_EQUAL_INT(remote2->getBigState(), RemoteBigParticipating);
@@ -77,6 +80,8 @@ void test_create_bridge_and_one_close_one_far_remote(void) {
 
     FakeMesh* mesh = new FakeMesh(100);
     std::vector<BaseDevice*> listOfDevices = {};
+    // Fake presenter
+    FakePresenterTransport* transport = new FakePresenterTransport();
     // Remote
     NamespacedPrinter* remotePrint = new NamespacedPrinter("remote1");
     RemoteDevice* remote = new RemoteDevice(remotePrint, reboot_unexpected);
@@ -93,7 +98,7 @@ void test_create_bridge_and_one_close_one_far_remote(void) {
     listOfDevices.push_back(remote2);
     // Bridge
     NamespacedPrinter* bridgePrint = new NamespacedPrinter("bridge");
-    BridgeDevice* bridge = new BridgeDevice(bridgePrint, reboot_unexpected);
+    BridgeDevice* bridge = new BridgeDevice(bridgePrint, reboot_unexpected, transport);
     uint8_t bridge_mac[] = {0x01, 0x12, 0x23, 0x34, 0x45, 0x56};
     FakeMeshCommunicator* bridge_comm = new FakeMeshCommunicator(mesh, bridge_mac);
     bridge_comm->registerDevice(bridge);
@@ -101,7 +106,7 @@ void test_create_bridge_and_one_close_one_far_remote(void) {
     // Setup
     std::for_each(listOfDevices.begin(), listOfDevices.end(), [](BaseDevice* x){ x->PreSetup(); });
     std::for_each(listOfDevices.begin(), listOfDevices.end(), [](BaseDevice* x){ x->Setup(); });
-    for (int i=0; i< 500; i++) std::for_each(listOfDevices.begin(), listOfDevices.end(), [](BaseDevice* x){ x->Loop(); });
+    for (int i=0; i< 100; i++) std::for_each(listOfDevices.begin(), listOfDevices.end(), [](BaseDevice* x){ x->Loop(); });
     // Make sure we are participating by this point
     TEST_ASSERT_EQUAL_INT(remote->getBigState(), RemoteBigParticipating);
     TEST_ASSERT_EQUAL_INT(remote2->getBigState(), RemoteBigConnecting);

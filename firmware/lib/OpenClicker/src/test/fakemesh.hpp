@@ -34,7 +34,7 @@ public:
     int SendMessage(const uint8_t* from_mac, const uint8_t* to_mac, const uint8_t * msg, uint32_t msg_size) {
         uint64_t fromMacId = mac_to_uint64_t(from_mac);
         uint64_t toMacId = mac_to_uint64_t(to_mac);
-        printf("Sending message of %u bytes. %" PRIx64 "-> %" PRIx64 "\n", msg_size, fromMacId, toMacId);
+        printf("[FakeMesh] Sending message of %u bytes - first byte is %d. %" PRIx64 "-> %" PRIx64 "\n", msg_size, msg[0], fromMacId, toMacId);
         if (receiverMap.count(fromMacId) == 0) {
             return MESH_ERR_INVALID_STATE;
         }
@@ -44,11 +44,11 @@ public:
             for (auto const& x : receiverMap) {
                 if (x.first == fromMacId) continue;
                 if (this->inRange(sender, x.second)) {
-                    printf("Broadcasting to 0x%" PRIx64 "\n", x.first);
+                    printf("[FakeMesh] Broadcasting to 0x%" PRIx64 "\n", x.first);
                     x.second.receiver(from_mac, msg, msg_size);
                 }
                 else {
-                    printf("Out of range 0x%" PRIx64 "\n", x.first);
+                    printf("[FakeMesh] Out of range 0x%" PRIx64 "\n", x.first);
                     x.second.receiver(from_mac, msg, msg_size);
                 }
             }
@@ -56,7 +56,7 @@ public:
         }
         else if (receiverMap.count(toMacId) == 1) {
             if (!this->inRange(sender, receiverMap[toMacId])) {
-                printf("Out of range\n");
+                printf("[FakeMesh] Out of range\n");
                 return MESH_ERR_ESPNOW_NOT_FOUND;
             }
             receiverMap[toMacId].receiver(from_mac, msg, msg_size);
@@ -64,7 +64,7 @@ public:
         }
         else {
             // We did not find this participant
-            printf("This participant did not register");
+            printf("[FakeMesh] This participant did not register");
             return MESH_ERR_INVALID_STATE;
         }
         return MESH_OK;
@@ -73,9 +73,9 @@ public:
     void AddReceiver(const uint8_t* to_mac, MeshReceive_t callback, float x = 0, float y = 0) {
         uint64_t toMacId = mac_to_uint64_t(to_mac);
         if (receiverMap.count(toMacId) == 1) {
-            printf("This participant registered twice");
+            printf("[FakeMesh] This participant registered twice");
         }
-        printf("Adding receiver 0x%" PRIx64 "\n", toMacId);
+        printf("[FakeMesh] Adding receiver 0x%" PRIx64 "\n", toMacId);
         MeshEndpoint_t endpoint = {
             .receiver = callback,
             .x  = x,

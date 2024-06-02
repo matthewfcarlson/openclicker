@@ -5,9 +5,20 @@
 
 enum PresenterMessageIds {
     ButtonPressed = MIN_PRESENTER_MESSAGE_ID,
+    RemoteRequestState,
+    PresenterSetState,
 };
 
 typedef struct {
-    uint8_t id;
+    uint8_t id; // ButtonPressed
     uint8_t button_id; // 0-4
-} PresenterMessageButtonPressed;
+} PresenterRemoteButtonPressed_t;
+
+typedef struct {
+    uint8_t id; // RemoteRequestState
+} PresenterRemoteRequestState_t;
+
+typedef struct {
+    uint8_t id; // PresenterSetState
+    char state_name[31];
+} PresenterSetState_t;
