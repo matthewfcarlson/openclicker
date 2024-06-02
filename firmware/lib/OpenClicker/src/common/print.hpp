@@ -368,5 +368,56 @@ size_t Print::printFloat(double number, uint8_t digits)
 
     return n;
 }
+
+void cout_print(const char* buffer, size_t size) {
+    if (size == 0) return;
+    if (size == 1) {
+        printf("%c", buffer[0]);
+    }
+    else {
+        printf("%s", buffer);
+    }
+}
+
+class VoidPrinter: public Print {
+public:
+    VoidPrinter() {}
+    size_t write(uint8_t c) {
+        cout_print((const char*)&c, 1);
+        return 0;
+    }
+    size_t write(const char* buffer, size_t size) {
+        cout_print(buffer, size);
+        return 0;
+    }
+};
+
+class NamespacedPrinter: public Print {
+    char name[25];
+    bool hasPrintedNewLine = true;
+public:
+    NamespacedPrinter(const char* name) {
+        strncpy(this->name, name, sizeof(this->name));
+    }
+    size_t write(uint8_t c) {
+        if (hasPrintedNewLine) {
+            cout_print("[", 1);
+            cout_print(this->name, sizeof(this->name));
+            cout_print("] ", 2);
+            hasPrintedNewLine = false;
+        }
+        cout_print((const char*)&c, 1);
+        if (c == '\n') hasPrintedNewLine = true;
+        return 0;
+    }
+    size_t write(const char* buffer, size_t size) {
+        cout_print(this->name, sizeof(this->name));
+        cout_print(buffer, size);
+        return 0;
+    }
+};
+
+VoidPrinter* VoidPrint = new VoidPrinter();
+
 #endif
 #endif

@@ -1,6 +1,7 @@
 #include <unity.h>
 #include "../common_test.hpp"
 #include <remote/remote.hpp>
+#include <test/fakemesh.hpp>
 
 void setUp(void) {
     // set stuff up here
