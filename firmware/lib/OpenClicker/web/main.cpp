@@ -160,6 +160,14 @@ void send_presenter_msg(const char* msg) {
 }
 }
 
+uint8_t remote_mac[] = {0};
+
+extern "C" {
+const uint8_t* get_remote_mac() {
+  return remote_mac;
+}
+}
+
 int main()
 {
   init_webgl(WIDTH, HEIGHT);
@@ -175,7 +183,7 @@ int main()
   // Remote
   NamespacedPrinter* remotePrint = new NamespacedPrinter("remote");
   remote = new RemoteDevice(remotePrint, reboot_unexpected);
-  uint8_t remote_mac[] = {0xAB, 0xBC, 0xCD, 0xDE, 0xEF, 0x00};
+  for (int i=0; i < 6; i++) remote_mac[i] = (int8_t)(255 * emscripten_random());
   FakeMeshCommunicator* remote_comm = new FakeMeshCommunicator(mesh, remote_mac);
   remote_comm->registerDevice(remote);
   // Bridge

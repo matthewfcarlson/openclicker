@@ -3,6 +3,13 @@
 #include "protocol/remote_protocol.h"
 #include "common/periodic_task.hpp"
 #include <functional>
+#include <algorithm>
+#include <vector>
+#include "little_state.hpp"
+#include <remote/little_states/dark.hpp>
+#include <remote/little_states/multiple_choice.hpp>
+
+#pragma once
 
 enum RemoteBigStates {
     RemoteBigInit, // Startup state
@@ -23,8 +30,9 @@ private:
     PeriodicTask* bridgeRequestTask;
     PeriodicTask* presenterRequestTask;
     RemoteBigStates bigState = RemoteBigInit;
+    RemoteLittleState* littleState = nullptr;
+    std::vector<RemoteLittleState*> allLittleStates= {};
     uint8_t bridgeMac[6] = {0};
-    char littleState[32] = {0};
  
     void MeshRequestBridge() {
         uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -34,6 +42,7 @@ private:
     void MeshPresenterRequestState() {
         // TODO: request the current state from the presenter
         PresenterRemoteRequestState_t msg = { .id = RemoteRequestState};
+        GenerateLittleStateBloomHashes(&msg.state_hash1, &msg.state_hash2, &msg.state_hash3, &msg.state_hash4);
         int status = MeshSend(bridgeMac, (uint8_t*)&msg, sizeof(msg));
     }
 
@@ -53,11 +62,24 @@ private:
         // TODO: write display logic
     }
 
+    // TODO: create some sort of little state store that we can compile to another file that's consumed by presenter
+    // That way we know the hashes will match
+    void GenerateLittleStateBloomHashes(uint32_t* hash1, uint32_t* hash2, uint32_t* hash3, uint32_t* hash4) {
+        *hash1 = 0;
+        *hash2 = 0;
+        *hash3 = 0;
+        *hash4 = 0;
+        std::for_each(allLittleStates.begin(), allLittleStates.end(), [hash1,hash2,hash3,hash4](RemoteLittleState* x){ x->GenerateLittleStateBloomHashes(hash1, hash2, hash3, hash4); });
+    }
+
 public:
 
     RemoteDevice(Print* printer, Callback rebootFunc): BaseDevice(printer, rebootFunc) {
         bridgeRequestTask = new PeriodicTask(1000, std::bind(&RemoteDevice::MeshRequestBridge, this));
         presenterRequestTask = new PeriodicTask(1000, std::bind(&RemoteDevice::MeshPresenterRequestState, this));
+        // Create all little states
+        allLittleStates.push_back(new DarkLittleState(printer));
+        allLittleStates.push_back(new MultipleChoiceLittleState(printer));
     };
 
     RemoteBigStates getBigState() {
@@ -89,7 +111,7 @@ public:
         }
         else if (currentBigState == RemoteBigConnected) {
             this->presenterRequestTask->Check();
-            if (littleState[0] != 0) {
+            if (littleState != nullptr) {
                 nextBigState = RemoteBigParticipating;
             }
         }
@@ -135,7 +157,12 @@ public:
             // TODO: create a macro that wraps this check
             // assert(sizeof(PresenterSetState_t) == data_len);
             PresenterSetState_t* state = (PresenterSetState_t*)data;
-            strncpy(this->littleState, state->state_name, sizeof(this->littleState));
+            for (const auto littleState : allLittleStates) {
+                if (littleState->DoesMatchStateName(state->state_name, sizeof(state->state_name))) {
+                    this->littleState = littleState;
+                    break;
+                }
+            }
         }
         else {
             this->printer->printf("Unknown message %d\n", msgType);

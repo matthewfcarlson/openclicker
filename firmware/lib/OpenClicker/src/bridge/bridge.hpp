@@ -2,6 +2,7 @@
 #include "protocol/presenter_protocol.h"
 #include "protocol/remote_protocol.h"
 #include <cstdio>
+#include "base64.h"
 
 #pragma once
 
@@ -20,6 +21,11 @@ protected:
                 mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4],
                 mac_addr[5]);
         strncat(msg, macStr, msg_size);
+        strncat(msg, " ", msg_size);
+        size_t base64_len = 0;
+        unsigned char* base64_str = base64_encode(data, data_len, &base64_len);
+        strncat(msg, (const char*)base64_str, msg_size);
+        free(base64_str);
         // TODO: figure out how much space I'll need to encode images
         // char* base64 = (char*)malloc(10 + data_len);
         // unsigned int base64_length = encode_base64(data, data_len, (unsigned char*)base64);
@@ -42,16 +48,9 @@ public:
     BridgeTransport() {};
     virtual void SendMessageToPresenter(const uint8_t* mac_addr, const uint8_t *data, uint32_t data_len) {
         // Serial print this to the console
-        char macStr[18];
-        snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
-                mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4],
-                mac_addr[5]);
-        // TODO: figure out how much space I'll need to encode images
-        // char* base64 = (char*)malloc(10 + data_len);
-        // unsigned int base64_length = encode_base64(data, data_len, (unsigned char*)base64);
-        // printer->println(base64);
-        // free(base64);
-        printf("PRESENTER: \n");
+        char message[512] = {0};
+        ConvertMessageToString(mac_addr, data, data_len, message, sizeof(message));
+        printf("PRESENTER: %s\n", message);
     }
 
     virtual void SendTextMessageToBridge(const char* msg, uint32_t msg_size) {

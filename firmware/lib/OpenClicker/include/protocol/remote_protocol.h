@@ -2,6 +2,8 @@
 #include <stdint.h>
 #pragma once
 
+#pragma pack(push, 1)
+
 enum RemoteMessageIds {
     BridgeRequest = 1,
     BridgeResponse
@@ -14,3 +16,5 @@ typedef struct {
 typedef struct {
     uint8_t id;
 } RemoteMessageBridgeResponse_t;
+
+#pragma pack(pop)
