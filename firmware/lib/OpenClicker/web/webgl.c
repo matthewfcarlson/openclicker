@@ -46,14 +46,14 @@ static GLuint create_texture()
 void EMSCRIPTEN_KEEPALIVE init_webgl(int width, int height)
 {
   double dpr = emscripten_get_device_pixel_ratio();
-  emscripten_set_element_css_size("canvas", width / dpr, height / dpr);
-  emscripten_set_canvas_element_size("canvas", width, height);
+  emscripten_set_element_css_size("#remote-canvas", width / dpr, height / dpr);
+  emscripten_set_canvas_element_size("#remote-canvas", width, height);
 
   EmscriptenWebGLContextAttributes attrs;
   emscripten_webgl_init_context_attributes(&attrs);
   attrs.alpha = 0;
   attrs.majorVersion = 2;
-  glContext = emscripten_webgl_create_context("canvas", &attrs);
+  glContext = emscripten_webgl_create_context("#remote-canvas", &attrs);
   emscripten_webgl_make_context_current(glContext);
 
   pixelWidth = 2.f / width;

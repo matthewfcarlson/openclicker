@@ -49,12 +49,16 @@ const createMainWindow = () => {
 const createRemoteWindow = () => {
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     const remoteWindow = new BrowserWindow({
-      width: 400,
-      height: 400,
+      width: 350,
+      height: 230,
     })
     remoteWindow.loadURL(`${MAIN_WINDOW_VITE_DEV_SERVER_URL}/remote.html`);
     // Open the DevTools.
-    remoteWindow.webContents.openDevTools();
+    remoteWindow.webContents.openDevTools({
+      mode:'detach',
+      title: "OpenClicker Remote Console"
+    });
+    remoteWindow.setTitle("OpenClicker Remote")
   }
 }
 
