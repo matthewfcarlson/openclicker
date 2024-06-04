@@ -34,6 +34,10 @@ public:
     int SendMessage(const uint8_t* from_mac, const uint8_t* to_mac, const uint8_t * msg, uint32_t msg_size) {
         uint64_t fromMacId = mac_to_uint64_t(from_mac);
         uint64_t toMacId = mac_to_uint64_t(to_mac);
+        if (msg_size == 0) {
+            printf("[FakeMesh] %" PRIx64 "-> %" PRIx64 " empty message, dropping\n", fromMacId, toMacId);
+            return MESH_ERR_ESPNOW_ARG;
+        }
         printf("[FakeMesh] Sending message of %u bytes - first byte is %d. %" PRIx64 "-> %" PRIx64 "\n", msg_size, msg[0], fromMacId, toMacId);
         if (receiverMap.count(fromMacId) == 0) {
             return MESH_ERR_INVALID_STATE;
@@ -90,12 +94,13 @@ private:
     std::map<uint64_t, bool> peers;
     FakeMesh* mesh;
     float x, y;
-    uint8_t* mac[6];
+    uint8_t mac[6];
     mesh_err_t send(const uint8_t* to_mac, const uint8_t* msg, uint32_t msg_size) {
         uint64_t toMacId = FakeMesh::mac_to_uint64_t(to_mac);
         // Check if this isn't a broadcast
         if (toMacId != FakeMesh::broadcastMacId) {
             if (peers.count(toMacId) == 0) {
+                printf("[FakeMeshComm] peer of 0x%" PRIx64 " not found\n", toMacId);
                 // We don't have this person in our peer list
                 return MESH_ERR_ESPNOW_NOT_FOUND;
             }
@@ -122,13 +127,12 @@ private:
     }
 
 public:
-    FakeMeshCommunicator(FakeMesh* mesh, uint8_t* mac, float x = 0, float y = 0) : mesh(mesh), x(x), y(y) {
-        memcpy(this->mac, mac, sizeof(this->mac));
-    }
+    FakeMeshCommunicator(FakeMesh* mesh, float x = 0, float y = 0) : mesh(mesh), x(x), y(y) {}
 
     void registerDevice(BaseDevice* device) {
         device->MeshRegisterAddPeer(createAddPeerCallback());
         device->MeshRegisterSend(createSendCallback());
+        device->CopyMacAddress(this->mac);
         registerReceiveCallback(device);
     }
 };

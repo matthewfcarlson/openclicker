@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-const  ipcRenderer = window.require('electron').ipcRenderer;
+const ipcRenderer = window.require('electron').ipcRenderer;
 import { LessonPlan, LessonPlanType } from '../../common/LessonStates';
 
 export const useLessonStore = defineStore({

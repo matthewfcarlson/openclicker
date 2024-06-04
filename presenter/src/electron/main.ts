@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, IpcMainInvokeEvent, Menu } from 'electron';
 import path from 'path';
 import fs from "fs";
 
@@ -16,6 +16,22 @@ async function handleFileOpen() {
   }
   const data = await fs.promises.readFile(filePaths[0], { encoding: 'utf-8' });
   return data;
+}
+
+async function handleMessageToPresenter(event: IpcMainInvokeEvent, message: string) {
+  await broadcastEventToAllWindows(event.sender.id, 'message-to-presenter', message);
+}
+
+async function handleMessageFromPresenter(event: IpcMainInvokeEvent, message: string) {
+  await broadcastEventToAllWindows(event.sender.id, 'message-from-presenter', message);
+}
+
+async function broadcastEventToAllWindows(senderId: number, eventName:string, message:string){
+  BrowserWindow.getAllWindows().forEach((x)=>{
+    console.log(`From ${senderId}->${x.id} ${message}`);
+    if (x.id == senderId) return;
+    x.webContents.send(eventName, message);
+  })
 }
 
 const createMainWindow = () => {
@@ -51,6 +67,9 @@ const createRemoteWindow = () => {
     const remoteWindow = new BrowserWindow({
       width: 350,
       height: 230,
+      webPreferences: {
+        preload: path.join(__dirname, './remote_preload.js'),
+      }
     })
     remoteWindow.loadURL(`${MAIN_WINDOW_VITE_DEV_SERVER_URL}/remote.html`);
     // Open the DevTools.
@@ -80,6 +99,8 @@ app.on('activate', () => {
 
 app.whenReady().then(() => {
   ipcMain.handle('dialog:openFile', handleFileOpen)
+  ipcMain.handle('message-from-presenter', handleMessageFromPresenter)
+  ipcMain.handle('message-to-presenter', handleMessageToPresenter)
   createMainWindow();
   createRemoteWindow()
 });
@@ -88,6 +109,45 @@ app.whenReady().then(() => {
 // code. You can also put them in separate files and import them here.
 const isMac = process.platform === 'darwin'
 const isDev = (MAIN_WINDOW_VITE_DEV_SERVER_URL != null);
+const edit = {
+  label: "Edit",
+  submenu: [
+    {
+      label: "Undo",
+      accelerator: "CmdOrCtrl+Z",
+      selector: "undo:"
+    },
+    {
+      label: "Redo",
+      accelerator: "Shift+CmdOrCtrl+Z",
+      selector: "redo:"
+    },
+    {
+      type: "separator"
+    },
+    {
+      label: "Cut",
+      accelerator: "CmdOrCtrl+X",
+      selector: "cut:"
+    },
+    {
+      label: "Copy",
+      accelerator: "CmdOrCtrl+C",
+      selector: "copy:"
+    },
+    {
+      label: "Paste",
+      accelerator: "CmdOrCtrl+V",
+      selector: "paste:"
+    },
+    {
+      label: "Select All",
+      accelerator: "CmdOrCtrl+A",
+      selector: "selectAll:"
+    }
+  ]
+}
+
 const template = [
   // { role: 'appMenu' }
   ...(isMac
@@ -106,7 +166,8 @@ const template = [
       ]
     }]
     : []),
-  // { role: 'fileMenu' }
+  // { role: 'fileMenu' },
+  edit,
   // { role: 'windowMenu' }
   {
     label: 'Window',

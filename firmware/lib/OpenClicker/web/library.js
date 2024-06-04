@@ -28,12 +28,6 @@ mergeInto(LibraryManager.library, {
       ctx.fillText(String.fromCharCode(unicodeChar), 0, canvas.height-7);
       _uploadFlipped(canvas);
     },
-
-    presenter_relay: function(raw_msg) {
-      const msg = UTF8ToString(raw_msg);
-      console.log("Presenter relay", msg);
-    },
-  
     find_character_pair_kerning: function(ch1, ch2, charSize) {
       if (ch1 <= 32) ch1 = 105; // replace spaces with 'i' character to be able to measure their advance with fillText()
       if (ch2 <= 32) ch2 = 105;

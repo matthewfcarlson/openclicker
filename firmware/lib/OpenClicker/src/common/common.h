@@ -48,10 +48,13 @@ typedef int mesh_err_t;
 
 #define MESH_MAX_DATA_LEN         250       /*!< Maximum length of ESPNOW data which is sent very time */
 
+const uint8_t PRESENTER_MAC[6] = {0xAF, 0xAF, 0xAF, 0xAF, 0xAF, 0xAF};
+
 typedef std::function<mesh_err_t(const uint8_t* mac_addr, uint8_t channel)> MeshAddPeer_t;
 typedef void (*Callback)();
 typedef std::function<mesh_err_t(const uint8_t*, const uint8_t*, uint32_t)> MeshSend_t;
 typedef std::function<void(const uint8_t*, const uint8_t*, uint32_t)> MeshReceive_t;
+typedef std::function<void(const uint8_t*, const uint8_t*, const uint8_t*, uint32_t)> MeshMessageReceive_t;
 
 class BaseDevice {
 
@@ -61,9 +64,10 @@ private:
     Callback rebootFunc = nullptr;
 
 protected:
+    uint8_t macAddress[6] = {0};
     Print* printer;
     void SprintMacAddress(const uint8_t mac_addr[6], char* macStr, uint32_t macStrSize) {
-        snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
+        snprintf(macStr, macStrSize, "%02x:%02x:%02x:%02x:%02x:%02x",
                 mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4],
                 mac_addr[5]);
     }
@@ -94,7 +98,9 @@ protected:
     }
 
 public:
-    BaseDevice(Print* printer, Callback rebootFunc) : printer(printer), rebootFunc(rebootFunc) {};
+    BaseDevice(Print* printer, Callback rebootFunc, const uint8_t* mac = nullptr) : printer(printer), rebootFunc(rebootFunc) {
+        if (mac != nullptr) this->AssignMacAddress(mac);
+    };
     ~BaseDevice(){};
     virtual void PreSetup() {};
     virtual void Setup() {};
@@ -116,6 +122,14 @@ public:
 
     virtual void ButtonPressed(uint8_t index) {}
     virtual void ButtonReleased(uint8_t index) {}
+
+    virtual void AssignMacAddress(const uint8_t* mac_address) {
+        memcpy(this->macAddress, mac_address, sizeof(this->macAddress));
+    }
+
+    virtual void CopyMacAddress(uint8_t* mac_address) {
+        memcpy(mac_address, this->macAddress, sizeof(this->macAddress));
+    }
 
 };
 

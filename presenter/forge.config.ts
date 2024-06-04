@@ -67,10 +67,10 @@ const config: ForgeConfig = {
           entry: 'src/electron/main.ts',
           config: 'vite.main.config.ts',
         },
-        // {
-        //   entry: 'src/electron/preload.ts',
-        //   config: 'vite.preload.config.ts',
-        // },
+        {
+          entry: 'src/electron/remote_preload.ts',
+          config: 'vite.preload.config.ts',
+        },
       ],
       renderer: [
         {

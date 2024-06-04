@@ -4,6 +4,7 @@
 #include <esp_system.h>
 #include <esp_now.h>
 #include <WiFi.h>
+#include <esp_wifi.h>
 #include <cstring>
 #include <list>
 
@@ -37,6 +38,9 @@ void wrapper_esp_send_callback(const uint8_t* mac_addr, esp_now_send_status_t st
 void setup() {
     Serial.begin(115200);
     // If you need to do an pre-setup, call that
+    uint8_t mac_address[6] = {0};
+    esp_wifi_get_mac((wifi_interface_t)ESP_IF_WIFI_STA, mac_address);
+    device->AssignMacAddress(mac_address);
     device->PreSetup();
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     Serial.print("ESP Board MAC Address:  ");

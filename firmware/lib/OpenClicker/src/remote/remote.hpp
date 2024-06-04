@@ -74,7 +74,7 @@ private:
 
 public:
 
-    RemoteDevice(Print* printer, Callback rebootFunc): BaseDevice(printer, rebootFunc) {
+    RemoteDevice(Print* printer, Callback rebootFunc, const uint8_t* mac = nullptr): BaseDevice(printer, rebootFunc, mac) {
         bridgeRequestTask = new PeriodicTask(1000, std::bind(&RemoteDevice::MeshRequestBridge, this));
         presenterRequestTask = new PeriodicTask(1000, std::bind(&RemoteDevice::MeshPresenterRequestState, this));
         // Create all little states

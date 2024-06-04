@@ -14,9 +14,10 @@ void tearDown(void) {
 void test_create_remote(void) {
 
     FakeMesh* mesh = new FakeMesh();
-    RemoteDevice* remote = new RemoteDevice(VoidPrint, reboot_unexpected);
     uint8_t mac[] = {0xAB, 0xBC, 0xCD, 0xDE, 0xEF, 0x00};
-    FakeMeshCommunicator* comm = new FakeMeshCommunicator(mesh, mac);
+    RemoteDevice* remote = new RemoteDevice(VoidPrint, reboot_unexpected, mac);
+    
+    FakeMeshCommunicator* comm = new FakeMeshCommunicator(mesh);
     comm->registerDevice(remote);
     remote->PreSetup();
     remote->Setup();

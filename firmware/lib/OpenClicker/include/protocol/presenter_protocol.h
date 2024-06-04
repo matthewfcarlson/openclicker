@@ -3,10 +3,11 @@
 #pragma once
 #define MIN_PRESENTER_MESSAGE_ID 20
 
-#pragma pack(push, 1)
+//#pragma pack(push, 1)
 
 enum PresenterMessageIds {
     RemoteButtonPressed = MIN_PRESENTER_MESSAGE_ID,
+    BridgeButtonPressed,
     RemoteHeartbeat,
     RemoteRequestState,
     PresenterSetState,
@@ -23,6 +24,11 @@ typedef struct {
 } PresenterRemoteHeartbeat_t;
 
 typedef struct {
+    uint8_t id; // PresenterMessageIds.BridgeButtonPressed
+    uint8_t button_id; // 0-4
+} PresenterBridgeButtonPressed_t;
+
+typedef struct {
     uint8_t id; // PresenterMessageIds.RemoteRequestState
     uint32_t state_hash1;
     uint32_t state_hash2;
@@ -35,4 +41,4 @@ typedef struct {
     char state_name[31];
 } PresenterSetState_t;
 
-#pragma pack(pop)
+//#pragma pack(pop)

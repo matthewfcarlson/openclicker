@@ -111,20 +111,33 @@ void loop(double t, double dt) {
 #define NUMBER_2_KEYCODE 50
 #define NUMBER_3_KEYCODE 51
 #define NUMBER_4_KEYCODE 52
+#define NUMBER_5_KEYCODE 53
+#define NUMBER_6_KEYCODE 54
+#define NUMBER_7_KEYCODE 55
+#define NUMBER_8_KEYCODE 56
 
 EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *e, void *userData) {
+    // printf("%x%s, key: \"%s\", code: \"%s\", location: %u,%s%s%s%s repeat: %d, locale: \"%s\", char: \"%s\", charCode: %u, keyCode: %u, which: %u, timestamp: %lf\n", eventType,
+    //   emscripten_event_type_to_string(eventType), e->key, e->code, e->location,
+    //   e->ctrlKey ? " CTRL" : "", e->shiftKey ? " SHIFT" : "", e->altKey ? " ALT" : "", e->metaKey ? " META" : "",
+    //   e->repeat, e->locale, e->charValue, e->charCode, e->keyCode, e->which,
+    //   e->timestamp);
   if (e->keyCode >= NUMBER_1_KEYCODE && e->keyCode <= NUMBER_4_KEYCODE) {
-    printf("%x%s, key: \"%s\", code: \"%s\", location: %u,%s%s%s%s repeat: %d, locale: \"%s\", char: \"%s\", charCode: %u, keyCode: %u, which: %u, timestamp: %lf\n", eventType,
-      emscripten_event_type_to_string(eventType), e->key, e->code, e->location,
-      e->ctrlKey ? " CTRL" : "", e->shiftKey ? " SHIFT" : "", e->altKey ? " ALT" : "", e->metaKey ? " META" : "",
-      e->repeat, e->locale, e->charValue, e->charCode, e->keyCode, e->which,
-      e->timestamp);
     uint8_t index = e->keyCode - NUMBER_1_KEYCODE;
     if (eventType == KEYDOWN_EVENT_ID) {
       remote->ButtonPressed(index);
     }
     if (eventType == KEYUP_EVENT_ID) {
       remote->ButtonReleased(index);
+    }
+  }
+  if (e->keyCode >= NUMBER_5_KEYCODE && e->keyCode <= NUMBER_8_KEYCODE) {
+    uint8_t index = e->keyCode - NUMBER_5_KEYCODE;
+    if (eventType == KEYDOWN_EVENT_ID) {
+      bridge->ButtonPressed(index);
+    }
+    if (eventType == KEYUP_EVENT_ID) {
+      bridge->ButtonReleased(index);
     }
   }
   return 0;
@@ -153,19 +166,31 @@ EM_BOOL touch_callback(int eventType, const EmscriptenTouchEvent *e, void *userD
   return 0;
 }
 
-extern "C" {
-void send_presenter_msg(const char* msg) {
+extern "C" void send_presenter_msg(const char* msg) {
   uint32_t msg_size = strlen(msg);
+  printf("Got presenter message %s\n", msg);
   presenter->SendTextMessageToBridge(msg, msg_size);
 }
+uint8_t remote_mac[6] = {0};
+char remote_mac_str[20] = {0};
+
+extern "C" const char* get_remote_mac() {
+  presenter->MacToString(remote_mac, remote_mac_str, sizeof(remote_mac_str));
+  return (const char*)remote_mac_str;
 }
 
-uint8_t remote_mac[] = {0};
+extern "C" const char* fake_presenter_state_dark() {
 
-extern "C" {
-const uint8_t* get_remote_mac() {
-  return remote_mac;
-}
+  PresenterSetState_t msg = {
+    .id = PresenterSetState
+  };
+  const uint32_t text_size = 255;
+  char* text = (char*)malloc(text_size);
+  bzero(text,255);
+  strncpy(msg.state_name, "dark", sizeof(msg.state_name));
+  presenter->ConvertMessageToString(PRESENTER_MAC, remote_mac, (const uint8_t *)&msg, sizeof(msg), text, text_size);
+  printf("Crafting fake message of %s\n", text);
+  return text;
 }
 
 int main()
@@ -182,15 +207,16 @@ int main()
   FakeMesh* mesh = new FakeMesh();
   // Remote
   NamespacedPrinter* remotePrint = new NamespacedPrinter("remote");
-  remote = new RemoteDevice(remotePrint, reboot_unexpected);
   for (int i=0; i < 6; i++) remote_mac[i] = (int8_t)(255 * emscripten_random());
-  FakeMeshCommunicator* remote_comm = new FakeMeshCommunicator(mesh, remote_mac);
+  remote = new RemoteDevice(remotePrint, reboot_unexpected, remote_mac);
+  FakeMeshCommunicator* remote_comm = new FakeMeshCommunicator(mesh);
   remote_comm->registerDevice(remote);
   // Bridge
   NamespacedPrinter* bridgePrint = new NamespacedPrinter("bridge");
-  bridge = new BridgeDevice(bridgePrint, reboot_unexpected, presenter);
   uint8_t bridge_mac[] = {0x01, 0x12, 0x23, 0x34, 0x45, 0x56};
-  FakeMeshCommunicator* bridge_comm = new FakeMeshCommunicator(mesh, bridge_mac);
+  bridge_mac[0] = (int8_t)(255 * emscripten_random());
+  bridge = new BridgeDevice(bridgePrint, reboot_unexpected, presenter, bridge_mac);
+  FakeMeshCommunicator* bridge_comm = new FakeMeshCommunicator(mesh);
   bridge_comm->registerDevice(bridge);
   // Setup
   bridge->PreSetup();

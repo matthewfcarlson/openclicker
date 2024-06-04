@@ -19,14 +19,14 @@ void test_create_bridge_and_remote(void) {
 
     FakeMesh* mesh = new FakeMesh();
     // Remote
-    RemoteDevice* remote = new RemoteDevice(VoidPrint, reboot_unexpected);
     uint8_t remote_mac[] = {0xAB, 0xBC, 0xCD, 0xDE, 0xEF, 0x00};
-    FakeMeshCommunicator* remote_comm = new FakeMeshCommunicator(mesh, remote_mac);
+    RemoteDevice* remote = new RemoteDevice(VoidPrint, reboot_unexpected, remote_mac);
+    FakeMeshCommunicator* remote_comm = new FakeMeshCommunicator(mesh);
     remote_comm->registerDevice(remote);
     // Bridge
-    BridgeDevice* bridge = new BridgeDevice(VoidPrint, reboot_unexpected);
     uint8_t bridge_mac[] = {0x01, 0x12, 0x23, 0x34, 0x45, 0x56};
-    FakeMeshCommunicator* bridge_comm = new FakeMeshCommunicator(mesh, bridge_mac);
+    BridgeDevice* bridge = new BridgeDevice(VoidPrint, reboot_unexpected, nullptr, bridge_mac);
+    FakeMeshCommunicator* bridge_comm = new FakeMeshCommunicator(mesh);
     bridge_comm->registerDevice(bridge);
     // Setup
     bridge->PreSetup();
@@ -49,22 +49,22 @@ void test_create_bridge_and_two_remotes(void) {
     // Fake presenter
     FakePresenterTransport* transport = new FakePresenterTransport();
     // Remote
-    RemoteDevice* remote = new RemoteDevice(VoidPrint, reboot_unexpected);
     uint8_t remote_mac[] = {0xAB, 0xBC, 0xCD, 0xDE, 0xEF, 0x00};
-    FakeMeshCommunicator* remote_comm = new FakeMeshCommunicator(mesh, remote_mac);
+    RemoteDevice* remote = new RemoteDevice(VoidPrint, reboot_unexpected, remote_mac);
+    FakeMeshCommunicator* remote_comm = new FakeMeshCommunicator(mesh);
     remote_comm->registerDevice(remote);
     listOfDevices.push_back(remote);
     // Second remote
-    RemoteDevice* remote2 = new RemoteDevice(VoidPrint, reboot_unexpected);
     uint8_t remote2_mac[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-    FakeMeshCommunicator* remote2_comm = new FakeMeshCommunicator(mesh, remote2_mac);
+    RemoteDevice* remote2 = new RemoteDevice(VoidPrint, reboot_unexpected, remote2_mac);
+    FakeMeshCommunicator* remote2_comm = new FakeMeshCommunicator(mesh);
     remote2_comm->registerDevice(remote2);
     listOfDevices.push_back(remote2);
     // Bridge
-    BridgeDevice* bridge = new BridgeDevice(VoidPrint, reboot_unexpected, transport);
-    listOfDevices.push_back(bridge);
     uint8_t bridge_mac[] = {0x01, 0x12, 0x23, 0x34, 0x45, 0x56};
-    FakeMeshCommunicator* bridge_comm = new FakeMeshCommunicator(mesh, bridge_mac);
+    BridgeDevice* bridge = new BridgeDevice(VoidPrint, reboot_unexpected, transport, bridge_mac);
+    listOfDevices.push_back(bridge);
+    FakeMeshCommunicator* bridge_comm = new FakeMeshCommunicator(mesh);
     bridge_comm->registerDevice(bridge);
     // Setup
     std::for_each(listOfDevices.begin(), listOfDevices.end(), [](BaseDevice* x){ x->PreSetup(); });
@@ -84,23 +84,23 @@ void test_create_bridge_and_one_close_one_far_remote(void) {
     FakePresenterTransport* transport = new FakePresenterTransport();
     // Remote
     NamespacedPrinter* remotePrint = new NamespacedPrinter("remote1");
-    RemoteDevice* remote = new RemoteDevice(remotePrint, reboot_unexpected);
     uint8_t remote_mac[] = {0xAB, 0xBC, 0xCD, 0xDE, 0xEF, 0x00};
-    FakeMeshCommunicator* remote_comm = new FakeMeshCommunicator(mesh, remote_mac, 7);
+    RemoteDevice* remote = new RemoteDevice(remotePrint, reboot_unexpected, remote_mac);
+    FakeMeshCommunicator* remote_comm = new FakeMeshCommunicator(mesh, 7);
     remote_comm->registerDevice(remote);
     listOfDevices.push_back(remote);
     // Second remote
     NamespacedPrinter* remote2Print = new NamespacedPrinter("remote2");
-    RemoteDevice* remote2 = new RemoteDevice(remote2Print, reboot_unexpected);
     uint8_t remote2_mac[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-    FakeMeshCommunicator* remote2_comm = new FakeMeshCommunicator(mesh, remote2_mac, 12);
+    RemoteDevice* remote2 = new RemoteDevice(remote2Print, reboot_unexpected, remote2_mac);
+    FakeMeshCommunicator* remote2_comm = new FakeMeshCommunicator(mesh, 12);
     remote2_comm->registerDevice(remote2);
     listOfDevices.push_back(remote2);
     // Bridge
     NamespacedPrinter* bridgePrint = new NamespacedPrinter("bridge");
-    BridgeDevice* bridge = new BridgeDevice(bridgePrint, reboot_unexpected, transport);
     uint8_t bridge_mac[] = {0x01, 0x12, 0x23, 0x34, 0x45, 0x56};
-    FakeMeshCommunicator* bridge_comm = new FakeMeshCommunicator(mesh, bridge_mac);
+    BridgeDevice* bridge = new BridgeDevice(bridgePrint, reboot_unexpected, transport, bridge_mac);
+    FakeMeshCommunicator* bridge_comm = new FakeMeshCommunicator(mesh);
     bridge_comm->registerDevice(bridge);
     listOfDevices.push_back(bridge);
     // Setup
