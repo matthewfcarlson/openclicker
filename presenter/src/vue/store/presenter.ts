@@ -32,6 +32,7 @@ export const usePresenterStore = defineStore('presenter', () => {
         // Step 2: if it is a heartbeat, update our current list of meshDevices
         // Step 3: publish the message to any subscribers for raw events
     });
+
     function sendRawMessageToRemote(mac_address:string, base64_msg:string) {
         const msg = `MSG=af:af:af:af:af:af->${mac_address} ${base64_msg}`
         ipcRenderer.invoke('message-from-presenter', msg);

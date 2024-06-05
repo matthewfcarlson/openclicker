@@ -181,9 +181,7 @@ extern "C" const char* get_remote_mac() {
 
 extern "C" const char* fake_presenter_state_dark() {
 
-  PresenterSetState_t msg = {
-    .id = PresenterSetState
-  };
+  PRESENTER_PRESENTERSETSTATE(msg, "");
   const uint32_t text_size = 255;
   char* text = (char*)malloc(text_size);
   bzero(text,255);

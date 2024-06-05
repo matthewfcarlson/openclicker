@@ -228,10 +228,11 @@ public:
     }
 
     void ButtonPressed(uint8_t index) override {
-        PresenterBridgeButtonPressed_t msg = {
-            .id = BridgeButtonPressed,
-            .button_id = index
-        };
+        PRESENTER_BRIDGEBUTTONPRESSED(msg, index);
+        // PresenterBridgeButtonPressed_t msg = {
+        //     .id = BridgeButtonPressed,
+        //     .button_id = index
+        // };
         transport->SendMessageToPresenter(this->macAddress, (const uint8_t*)&msg, sizeof(msg));
     }
 };

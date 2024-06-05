@@ -156,7 +156,7 @@ public:
             // We had our state set, we should be presenting if we aren't already
             // TODO: create a macro that wraps this check
             // assert(sizeof(PresenterSetState_t) == data_len);
-            PresenterSetState_t* state = (PresenterSetState_t*)data;
+            PresenterPresenterSetState_t* state = (PresenterPresenterSetState_t*)data;
             for (const auto littleState : allLittleStates) {
                 if (littleState->DoesMatchStateName(state->state_name, sizeof(state->state_name))) {
                     this->littleState = littleState;
