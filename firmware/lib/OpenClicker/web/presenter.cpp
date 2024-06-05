@@ -32,3 +32,14 @@ extern "C" const char* message_json_to_string(const char* to_mac_str, const char
     transport->CreateMessageToString(PRESENTER_MAC_STR, to_mac_str, (const uint8_t*)&data, data_len, output, output_size);
     return output;
 }
+
+extern "C" const char* generate_base64_little_state_hash_json() {
+    // TODO generate a little state hash
+    PRESENTER_REMOTEREQUESTSTATE(msg, 0,0,0,0);
+    uint8_t* data = (uint8_t*)&msg;
+    uint32_t data_len = sizeof(msg);
+    // TODO: do the hashing thing
+    char* result = presenter_data_to_json(data, data_len);
+    if (result) return result;
+    return "{ }";
+}

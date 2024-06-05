@@ -179,6 +179,30 @@ def generate_c_header(file_path: Path):
         f.write("    return NULL;\n")
         f.write("}\n")
 
+        # Now another method that's just the data
+        f.write("extern \"C\" char* presenter_data_to_json(const uint8_t* message, const uint32_t message_size) {\n")
+        for message_id in PresenterMessageId:
+            struct_name = f"Presenter{message_id.name}_t"
+            f.write(f"    if (message[0] == {message_id.name}) {{\n")
+            f.write(f"        {struct_name}* msg = ({struct_name}*)message;\n")
+            format_str = f"\"{{\\\"id\\\":{message_id.value}"
+            fields = STRUCTS.get(message_id.value, {})
+            for field in fields:
+                marker = C_TYPE_TO_PRINT.get(fields[field][0][0])
+                format_str += f",\\\"{field}\\\":%{marker}" if marker != 's' else f",\\\"{field}\\\":\\\"%{marker}\\\""
+            format_str += '}"'
+            va_args = ", ".join([f"msg->{field}" for field in fields])
+            f.write(f"        int size_needed = snprintf(NULL, 0, {format_str}, {va_args}) + 1;\n")
+            f.write(f"        char* json = (char*)malloc(size_needed);\n")
+            f.write(f"        if (json == NULL) return NULL;\n")
+            f.write(f"        bzero(json, size_needed);\n")
+            f.write(f"        snprintf(json, size_needed, {format_str}, {va_args});\n")
+            # f.write("        }\"")
+            f.write(f"        return json;\n")
+            f.write(f"    }}\n")
+        f.write("    return NULL;\n")
+        f.write("}\n")
+
 
 def main():
     # first we need to find the path of the folder this file is in

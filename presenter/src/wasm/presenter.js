@@ -28,7 +28,7 @@ var readyPromise = new Promise((resolve, reject) => {
   readyPromiseResolve = resolve;
   readyPromiseReject = reject;
 });
-["_message_string_to_json","_message_json_to_string","_memory","___indirect_function_table","onRuntimeInitialized"].forEach((prop) => {
+["_message_string_to_json","_message_json_to_string","_generate_base64_little_state_hash_json","_memory","___indirect_function_table","onRuntimeInitialized"].forEach((prop) => {
   if (!Object.getOwnPropertyDescriptor(readyPromise, prop)) {
     Object.defineProperty(readyPromise, prop, {
       get: () => abort('You are getting ' + prop + ' on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js'),
@@ -1351,6 +1351,7 @@ var wasmExports = createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
 var _message_string_to_json = Module['_message_string_to_json'] = createExportWrapper('message_string_to_json', 1);
 var _message_json_to_string = Module['_message_json_to_string'] = createExportWrapper('message_json_to_string', 2);
+var _generate_base64_little_state_hash_json = Module['_generate_base64_little_state_hash_json'] = createExportWrapper('generate_base64_little_state_hash_json', 0);
 var _fflush = createExportWrapper('fflush', 1);
 var _emscripten_stack_init = () => (_emscripten_stack_init = wasmExports['emscripten_stack_init'])();
 var _emscripten_stack_get_free = () => (_emscripten_stack_get_free = wasmExports['emscripten_stack_get_free'])();

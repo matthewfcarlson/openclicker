@@ -14,7 +14,7 @@ REMOTE_EMFLAGS = -s --js-library web/library.js --closure 1 -s TEXTDECODER=2    
 		  -s GL_TRACK_ERRORS=1 -lGL -O3 -s WASM=1 -sMODULARIZE=0
 
 PRESENTER_EMFLAGS = -sMODULARIZE=1 -s ENVIRONMENT=web \
-    	-sEXPORTED_FUNCTIONS="['_message_string_to_json', "_message_json_to_string"]" -s EXPORTED_RUNTIME_METHODS=['ccall'] \
+    	-sEXPORTED_FUNCTIONS="['_message_string_to_json', "_message_json_to_string", "_generate_base64_little_state_hash_json"]" -s EXPORTED_RUNTIME_METHODS=['ccall'] \
 		-sEXPORT_ES6=1 -sEXPORT_NAME=OpenClicker
 
 remote: clean

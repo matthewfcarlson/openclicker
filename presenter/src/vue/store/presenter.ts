@@ -25,6 +25,8 @@ export const usePresenterStore = defineStore('presenter', () => {
         })
     }
     Module().then((wasm) => {
+        const little_state = JSON.parse(wasm.ccall('generate_base64_little_state_hash_json', 'string'));
+        console.log("little_state", little_state,);
         ipcRenderer.on('message-to-presenter', (x, msg:string)=> {
             // We assume everything is a bridge unless we get a remote heartbeat or state update request
             // Step 1: decode the base64 message and match it against a type
