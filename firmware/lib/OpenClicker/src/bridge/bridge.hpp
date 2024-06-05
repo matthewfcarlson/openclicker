@@ -24,7 +24,7 @@ public:
         assert(*str_size != 0);
 
         uint32_t current_msg_size = *str_size;
-        if (current_msg_size < 18) {
+        if (current_msg_size < 17) {
             printf("Failed to get a long enough message %d\n", current_msg_size);
             return nullptr;
         }
@@ -55,15 +55,21 @@ public:
     void ConvertMessageToString(const uint8_t* from_mac_addr, const uint8_t* to_mac_addr, const uint8_t *data, uint32_t data_len, char* msg, uint32_t msg_size) {
         // Convert a message to a string
         // TODO: explode in a better way
+        char macStr[18];
+        MacToString(from_mac_addr, macStr, sizeof(macStr));
+        char macStr2[18];
+        MacToString(to_mac_addr, macStr2, sizeof(macStr));
+        CreateMessageToString(macStr, macStr2, data, data_len, msg, msg_size);
+    }
+     void CreateMessageToString(const char* from_mac, const char* to_mac, const uint8_t *data, uint32_t data_len, char* msg, uint32_t msg_size) {
+        // Convert a message to a string
+        // TODO: explode in a better way
         if (msg == nullptr || msg_size < 3) return;
         bzero(msg, msg_size);
         strncat(msg, "MSG=", msg_size);
-        char macStr[18];
-        MacToString(from_mac_addr, macStr, sizeof(macStr));
-        strncat(msg, macStr, msg_size);
+        strncat(msg, from_mac, msg_size);
         strncat(msg, "->", msg_size);
-        MacToString(to_mac_addr, macStr, sizeof(macStr));
-        strncat(msg, macStr, msg_size);
+        strncat(msg, to_mac, msg_size);
         strncat(msg, " ", msg_size);
         size_t base64_len = 0;
         unsigned char* base64_str = base64_encode(data, data_len, &base64_len);

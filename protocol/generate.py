@@ -102,11 +102,11 @@ def generate_typescript(file_path: Path):
             f.write('\n')
 
         # now generate a matching function
-        f.write("export function parsePresenterMessage(data: object) {\n")
+        f.write("export function parsePresenterMessage(data: object, warn=false) {\n")
         for message_id in PresenterMessageId:
             f.write("    try {\n")
             f.write(f"        return Protocol{message_id.name}Z.parse(data);\n")
-            f.write("    } catch(e) {}\n\n")
+            f.write("    } catch(e) { if (warn) console.warn(e)}\n\n")
         f.write("    return null;\n")
         f.write("}\n")
 
@@ -120,6 +120,8 @@ def generate_c_header(file_path: Path):
         f.write("#pragma once\n\n")
         f.write("#include <stdint.h>\n")
         f.write("#include <stdlib.h>\n")
+        f.write("#include <stdio.h>\n")
+        f.write("#include <strings.h>\n")
         f.write("\n")
         f.write(f"#define MIN_PRESENTER_MESSAGE_ID {MIN_PRESENTER_MESSAGE_ID}")
 
@@ -154,30 +156,28 @@ def generate_c_header(file_path: Path):
             f.write("\n")
         f.write("\n")
         # now we need to write a function that turns the message into a json object
-        f.write("char* presenter_message_to_json(const uint8_t* message, const uint32_t message_size) {\n")
+        f.write("extern \"C\" char* presenter_message_to_json(const uint8_t* message, const uint32_t message_size, char* from_mac, char* to_mac) {\n")
         for message_id in PresenterMessageId:
             struct_name = f"Presenter{message_id.name}_t"
             f.write(f"    if (message[0] == {message_id.name}) {{\n")
             f.write(f"        {struct_name}* msg = ({struct_name}*)message;\n")
-            format_str = f"\"{{'id':'{message_id.name}'"
+            format_str = f"\"{{\\\"from\\\":\\\"%s\\\",\\\"to\\\":\\\"%s\\\",\\\"msg\\\":{{\\\"id\\\":{message_id.value}"
             fields = STRUCTS.get(message_id.value, {})
             for field in fields:
                 marker = C_TYPE_TO_PRINT.get(fields[field][0][0])
-                format_str += f",'{field}':%{marker}" if marker != 's' else f",'{field}':'%{marker}'"
-            format_str += '}"'
-            va_args = ", ".join([f"msg->{field}" for field in fields])
-            f.write(f"        int size_needed = snprintf(NULL, 0, {format_str}, {va_args});\n")
-            f.write(f"        char* json = (char*)malloc(size_needed+1);\n")
-            f.write(f"        if (json != NULL) return NULL;\n")
-            f.write(f"        bzero(json, size_needed+1);\n")
+                format_str += f",\\\"{field}\\\":%{marker}" if marker != 's' else f",\\\"{field}\\\":\\\"%{marker}\\\""
+            format_str += '}}"'
+            va_args = "from_mac, to_mac, " + ", ".join([f"msg->{field}" for field in fields])
+            f.write(f"        int size_needed = snprintf(NULL, 0, {format_str}, {va_args}) + 1;\n")
+            f.write(f"        char* json = (char*)malloc(size_needed);\n")
+            f.write(f"        if (json == NULL) return NULL;\n")
+            f.write(f"        bzero(json, size_needed);\n")
             f.write(f"        snprintf(json, size_needed, {format_str}, {va_args});\n")
             # f.write("        }\"")
             f.write(f"        return json;\n")
             f.write(f"    }}\n")
         f.write("    return NULL;\n")
         f.write("}\n")
-        
-
 
 
 def main():

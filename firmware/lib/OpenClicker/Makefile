@@ -1,7 +1,8 @@
 EMCC = emcc
-SOURCES = web/main.cpp web/webgl.c
+REMOTE_SOURCES = web/main.cpp web/webgl.c
+PRESENTER_SOURCES = web/presenter.cpp
 
-EMFLAGS = -s --js-library web/library.js --closure 1 -s TEXTDECODER=2    \
+REMOTE_EMFLAGS = -s --js-library web/library.js --closure 1 -s TEXTDECODER=2    \
           -s MIN_WEBGL_VERSION=1 -s MAX_WEBGL_VERSION=2    \
 		  -s ABORTING_MALLOC=0 -s ENVIRONMENT=web                               \
 		  -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0                           \
@@ -12,12 +13,23 @@ EMFLAGS = -s --js-library web/library.js --closure 1 -s TEXTDECODER=2    \
 		  -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FILESYSTEM=0    \
 		  -s GL_TRACK_ERRORS=1 -lGL -O3 -s WASM=1 -sMODULARIZE=0
 
-build: clean
-	mkdir out
-	cp web/index.html out/index.html
-	$(EMCC) $(EMFLAGS) $(SOURCES) -I src -I include -o out/remote.html
+PRESENTER_EMFLAGS = -sMODULARIZE=1 -s ENVIRONMENT=web \
+    	-sEXPORTED_FUNCTIONS="['_message_string_to_json', "_message_json_to_string"]" -s EXPORTED_RUNTIME_METHODS=['ccall'] \
+		-sEXPORT_ES6=1 -sEXPORT_NAME=OpenClicker
+
+remote: clean
+	$(EMCC) $(REMOTE_EMFLAGS) $(REMOTE_SOURCES) -I src -I include -o out/remote.html
 	cp out/remote.js ../../../presenter/src/wasm
 	cp out/remote.wasm ../../../presenter/src/wasm
 
+presenter: clean
+	$(EMCC) $(PRESENTER_EMFLAGS) $(PRESENTER_SOURCES) -I src -I include -o out/presenter.js
+	cp out/presenter.js ../../../presenter/src/wasm
+	cp out/presenter.wasm ../../../presenter/src/wasm
+
+build: remote presenter
+	@echo "Build Complete"
+
 clean:
 	rm -rf out
+	mkdir out

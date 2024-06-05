@@ -10,7 +10,6 @@ import IntroComp from "./Lesson/IntroComp.vue";
 import ErrorComp from "./Lesson/ErrorComp.vue";
 import LoadingComp from "./Lesson/LoadingComp.vue";
 import { LessonStateNames } from "../../common/LessonStates";
-import { parsePresenterMessage } from "../../common/Protocol";
 
 const msg = ref("");
 const mac = ref("");
@@ -28,12 +27,7 @@ function sendMessage() {
 }
 
 onMounted(() => {
-  console.log("mounted");
   window.addEventListener('onkeydown', keyCallback)
-  console.log(parsePresenterMessage({
-    id: 22,
-
-  }));
 });
 
 

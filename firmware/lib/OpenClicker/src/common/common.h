@@ -49,6 +49,7 @@ typedef int mesh_err_t;
 #define MESH_MAX_DATA_LEN         250       /*!< Maximum length of ESPNOW data which is sent very time */
 
 const uint8_t PRESENTER_MAC[6] = {0xAF, 0xAF, 0xAF, 0xAF, 0xAF, 0xAF};
+const char*   PRESENTER_MAC_STR = "af:af:af:af:af:af";
 
 typedef std::function<mesh_err_t(const uint8_t* mac_addr, uint8_t channel)> MeshAddPeer_t;
 typedef void (*Callback)();
