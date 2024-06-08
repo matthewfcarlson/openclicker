@@ -2,13 +2,12 @@
 // This is a list of functions that get pulled into the presenter.js
 #include <protocol/presenter_protocol.h>
 #include <bridge/bridge.hpp>
+#include "helpers.hpp"
 #include <remote/little_states/little_state_factory.hpp>
-
 
 char* presenter_message_to_json(const uint8_t* message, const uint32_t message_size, char* from_mac, char* to_mac);
 char* presenter_data_to_json(const uint8_t* message, const uint32_t message_size);
 
-BridgeTransport* transport = new BridgeTransport();
 extern "C" const char* message_string_to_json(const char* message) {
     uint8_t from_mac[6] = {0};
     uint8_t to_mac[6] = {0};

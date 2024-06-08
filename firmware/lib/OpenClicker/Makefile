@@ -1,6 +1,6 @@
 EMCC = emcc
 REMOTE_SOURCES = web/main.cpp web/webgl.c
-PRESENTER_SOURCES = web/presenter.cpp web/helpers.cpp
+PRESENTER_SOURCES = web/presenter.cpp
 
 REMOTE_EMFLAGS = -s --js-library web/library.js --closure 1 -s TEXTDECODER=2    \
           -s MIN_WEBGL_VERSION=1 -s MAX_WEBGL_VERSION=2    \
@@ -23,7 +23,7 @@ remote: clean
 	cp out/remote.wasm ../../../presenter/src/wasm
 
 presenter: clean
-	$(EMCC) $(PRESENTER_EMFLAGS) $(PRESENTER_SOURCES) -I src -I include -o out/presenter.js
+	$(EMCC) $(PRESENTER_EMFLAGS) $(PRESENTER_SOURCES) -I src -I include -I web -o out/presenter.js
 	cp out/presenter.js ../../../presenter/src/wasm
 	cp out/presenter.wasm ../../../presenter/src/wasm
 

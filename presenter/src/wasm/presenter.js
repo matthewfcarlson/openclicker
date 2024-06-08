@@ -28,7 +28,7 @@ var readyPromise = new Promise((resolve, reject) => {
   readyPromiseResolve = resolve;
   readyPromiseReject = reject;
 });
-["_message_string_to_json","_message_json_to_string","_generate_base64_little_state_hash_json","_memory","___indirect_function_table","onRuntimeInitialized"].forEach((prop) => {
+["_message_string_to_json","_message_json_to_string","_generate_base64_little_state_hash_json","_memory","__Z26create_RemoteButtonPressedPhh","__Z26create_BridgeButtonPressedPhh","__Z22create_RemoteHeartBeatPhh","__Z25create_RemoteRequestStatePhjjjj","__Z33create_PresenterSetStateDarkStatePh","__Z43create_PresenterSetStateMultipleChoiceStatePhhPc","__Z34create_PresenterSetStateEmojiStatePhtttt","__Z24create_PresenterSetStatePhPc","__Z28create_PresenterRemotePacketPhS_","___indirect_function_table","onRuntimeInitialized"].forEach((prop) => {
   if (!Object.getOwnPropertyDescriptor(readyPromise, prop)) {
     Object.defineProperty(readyPromise, prop, {
       get: () => abort('You are getting ' + prop + ' on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js'),
@@ -1349,6 +1349,15 @@ var wasmImports = {
 };
 var wasmExports = createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
+var __Z26create_RemoteButtonPressedPhh = Module['__Z26create_RemoteButtonPressedPhh'] = createExportWrapper('_Z26create_RemoteButtonPressedPhh', 2);
+var __Z26create_BridgeButtonPressedPhh = Module['__Z26create_BridgeButtonPressedPhh'] = createExportWrapper('_Z26create_BridgeButtonPressedPhh', 2);
+var __Z22create_RemoteHeartBeatPhh = Module['__Z22create_RemoteHeartBeatPhh'] = createExportWrapper('_Z22create_RemoteHeartBeatPhh', 2);
+var __Z25create_RemoteRequestStatePhjjjj = Module['__Z25create_RemoteRequestStatePhjjjj'] = createExportWrapper('_Z25create_RemoteRequestStatePhjjjj', 5);
+var __Z33create_PresenterSetStateDarkStatePh = Module['__Z33create_PresenterSetStateDarkStatePh'] = createExportWrapper('_Z33create_PresenterSetStateDarkStatePh', 1);
+var __Z43create_PresenterSetStateMultipleChoiceStatePhhPc = Module['__Z43create_PresenterSetStateMultipleChoiceStatePhhPc'] = createExportWrapper('_Z43create_PresenterSetStateMultipleChoiceStatePhhPc', 3);
+var __Z34create_PresenterSetStateEmojiStatePhtttt = Module['__Z34create_PresenterSetStateEmojiStatePhtttt'] = createExportWrapper('_Z34create_PresenterSetStateEmojiStatePhtttt', 5);
+var __Z24create_PresenterSetStatePhPc = Module['__Z24create_PresenterSetStatePhPc'] = createExportWrapper('_Z24create_PresenterSetStatePhPc', 2);
+var __Z28create_PresenterRemotePacketPhS_ = Module['__Z28create_PresenterRemotePacketPhS_'] = createExportWrapper('_Z28create_PresenterRemotePacketPhS_', 2);
 var _message_string_to_json = Module['_message_string_to_json'] = createExportWrapper('message_string_to_json', 1);
 var _message_json_to_string = Module['_message_json_to_string'] = createExportWrapper('message_json_to_string', 2);
 var _generate_base64_little_state_hash_json = Module['_generate_base64_little_state_hash_json'] = createExportWrapper('generate_base64_little_state_hash_json', 0);

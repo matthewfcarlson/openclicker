@@ -61,7 +61,7 @@ public:
         MacToString(to_mac_addr, macStr2, sizeof(macStr));
         CreateMessageToString(macStr, macStr2, data, data_len, msg, msg_size);
     }
-     void CreateMessageToString(const char* from_mac, const char* to_mac, const uint8_t *data, uint32_t data_len, char* msg, uint32_t msg_size) {
+    void CreateMessageToString(const char* from_mac, const char* to_mac, const uint8_t *data, uint32_t data_len, char* msg, uint32_t msg_size) {
         // Convert a message to a string
         // TODO: explode in a better way
         if (msg == nullptr || msg_size < 3) return;

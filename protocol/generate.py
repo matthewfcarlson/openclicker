@@ -242,9 +242,22 @@ class CHeaderFileGen(CommonFileGenBase):
             self.fp.write(f"    {struct_name} _0 = {{ \\\n")
             for field_name, field in message_struct['literal_fields'].items():
                 self.fp.write(f"        .{field_name} = {field[2]}, \\\n")
+            memcpy_fields = False
             for i, field in enumerate(fields):
+                field_type = fields[field][0]
+                if field_type.endswith("]"):
+                    memcpy_fields = True
+                    continue
                 self.fp.write(f"        .{field} = _{i+1}, \\\n")
-            self.fp.write("    }\n")
+            self.fp.write("    }")
+            if memcpy_fields:
+                self.fp.write("")
+                for i, field in enumerate(fields):
+                    field_type = fields[field][0]
+                    if not field_type.endswith("]"):
+                        continue
+                    self.fp.write(f"; \\\n   memcpy(_0.{field}, _{i+1}, sizeof(_0.{field}))")
+            self.fp.write(";\n")
             self.fp.write("\n")
 
     def write_parsers(self, message_struct_generator):
@@ -258,8 +271,12 @@ class CHelpersFileGen(CommonFileGenBase):
 
     def write_common_header(self):
         super().write_common_header()
-        for include in ["protocol/presenter_protocol.h", "string.h"]:
+        for include in ["protocol/presenter_protocol.h", "string.h", "emscripten.h", "bridge/bridge.hpp"]:
             self.fp.write(f"#include <{include}>\n")
+        self.fp.write("\n")
+        self.fp.write("const uint32_t msg_text_size = 255;\n")
+        self.fp.write("BridgeTransport* transport = new BridgeTransport();\n")
+        self.fp.write("const uint8_t bridge_mac[6] = {0xAF, 0xAF, 0xAF, 0xAF, 0xAF, 0xAF};\n")
         self.fp.write("\n")
 
     def write_parsers(self, message_struct_generator):
@@ -347,6 +364,31 @@ class CHelpersFileGen(CommonFileGenBase):
         self.fp.write("   return NULL;\n}\n")
         self.fp.write("\n")
 
+        # now start with functions that generate the message
+        for message_struct in message_structs:
+            self.fp.write(f"char* EMSCRIPTEN_KEEPALIVE create_{message_struct['name']}(\n")
+            params = ["uint8_t* mac_addr"]
+            fields = message_struct['fields']
+            for field_name, field in fields.items():
+                field_c_type = field[0]
+                if field_c_type.endswith("]"):
+                    field_c_type = field[0].split("[")[0]+"*"
+                params.append(f"{field_c_type} {field_name}")
+            for index, param in enumerate(params):
+                if index != 0:
+                    self.fp.write(",\n")
+                self.fp.write(f"    {param}")
+            self.fp.write("\n) {\n")
+            # now we need to generate the message
+            keys = ["msg",] + list(fields.keys())
+            self.fp.write(f"    PRESENTER_{message_struct['name'].upper()}({', '.join(keys)});\n")
+            self.fp.write("    char* msg_txt = (char*)malloc(msg_text_size);\n")
+            self.fp.write("    if (msg_txt == NULL) return nullptr;\n")
+            self.fp.write("    bzero(msg_txt, msg_text_size);\n")
+            self.fp.write("    transport->ConvertMessageToString(bridge_mac, mac_addr, (uint8_t*)&msg, sizeof(msg), msg_txt, msg_text_size);\n")
+            self.fp.write("    return msg_txt;\n")
+            self.fp.write("}\n")
+
 
 def main():
     # first we need to find the path of the folder this file is in
@@ -357,7 +399,7 @@ def main():
     # now get the path to the firmware/lib/OpenClicker/include/protocol/presenter_protocol.h relative to the root dir
     firmware_path = root_dir / "firmware" / "lib" / "OpenClicker" / "include" / "protocol" / "presenter_protocol.h"
     # now get the path to emscripten file
-    emscripten_path = root_dir / "firmware" / "lib" / "OpenClicker" / "web" / "helpers.cpp"
+    emscripten_path = root_dir / "firmware" / "lib" / "OpenClicker" / "web" / "helpers.hpp"
     # now we need to generate the typescript
     protocol_path.unlink(missing_ok=True)
     with open(protocol_path, "w") as fp:
