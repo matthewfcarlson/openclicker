@@ -32,10 +32,7 @@ public:
         if (msgType == RemoteRequestState) {
             printf("[FakePresenter] sending dark to %s\n", macStr);
             // Queue a message to this user
-            PresenterSetState_t setState = {
-                .id = PresenterSetState,
-                .state_name = "dark"
-            };
+            PRESENTER_PRESENTERSETSTATE(setState, "dark");
             this->bridgeCallback(mac_addr, (uint8_t*)&setState, sizeof(setState));
         }
     }

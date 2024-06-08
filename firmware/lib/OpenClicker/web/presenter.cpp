@@ -2,6 +2,11 @@
 // This is a list of functions that get pulled into the presenter.js
 #include <protocol/presenter_protocol.h>
 #include <bridge/bridge.hpp>
+#include <remote/little_states/little_state_factory.hpp>
+
+
+char* presenter_message_to_json(const uint8_t* message, const uint32_t message_size, char* from_mac, char* to_mac);
+char* presenter_data_to_json(const uint8_t* message, const uint32_t message_size);
 
 BridgeTransport* transport = new BridgeTransport();
 extern "C" const char* message_string_to_json(const char* message) {
@@ -24,6 +29,7 @@ extern "C" const char* message_string_to_json(const char* message) {
 
 extern "C" const char* message_json_to_string(const char* to_mac_str, const char* json) {
     printf("Converting message from JSON: %s %s. Temporarily saying DARK STATE\n", to_mac_str, json);
+    // TODO: create like a unique function for each message type that takes in a to_mac_str and a list of parameters?
     PRESENTER_PRESENTERSETSTATE(data, "dark");
     uint32_t data_len = sizeof(data);
     uint32_t output_size = 255;
@@ -34,11 +40,11 @@ extern "C" const char* message_json_to_string(const char* to_mac_str, const char
 }
 
 extern "C" const char* generate_base64_little_state_hash_json() {
-    // TODO generate a little state hash
     PRESENTER_REMOTEREQUESTSTATE(msg, 0,0,0,0);
+    LittleStateFactory* factory = new LittleStateFactory(VoidPrint);
+    factory->GenerateLittleStateBloomHashes(&msg.state_hash1, &msg.state_hash2, &msg.state_hash3, &msg.state_hash4);
     uint8_t* data = (uint8_t*)&msg;
     uint32_t data_len = sizeof(msg);
-    // TODO: do the hashing thing
     char* result = presenter_data_to_json(data, data_len);
     if (result) return result;
     return "{ }";

@@ -1,6 +1,6 @@
 EMCC = emcc
 REMOTE_SOURCES = web/main.cpp web/webgl.c
-PRESENTER_SOURCES = web/presenter.cpp
+PRESENTER_SOURCES = web/presenter.cpp web/helpers.cpp
 
 REMOTE_EMFLAGS = -s --js-library web/library.js --closure 1 -s TEXTDECODER=2    \
           -s MIN_WEBGL_VERSION=1 -s MAX_WEBGL_VERSION=2    \

@@ -5,9 +5,7 @@
 #include <functional>
 #include <algorithm>
 #include <vector>
-#include "little_state.hpp"
-#include <remote/little_states/dark.hpp>
-#include <remote/little_states/multiple_choice.hpp>
+#include <remote/little_states/little_state_factory.hpp>
 
 #pragma once
 
@@ -31,7 +29,8 @@ private:
     PeriodicTask* presenterRequestTask;
     RemoteBigStates bigState = RemoteBigInit;
     RemoteLittleState* littleState = nullptr;
-    std::vector<RemoteLittleState*> allLittleStates= {};
+    LittleStateFactory* littleStateFactory;
+    
     uint8_t bridgeMac[6] = {0};
  
     void MeshRequestBridge() {
@@ -40,9 +39,9 @@ private:
         int status = MeshSend(broadcast_mac, (uint8_t*)&msg, sizeof(msg));
     }
     void MeshPresenterRequestState() {
-        // TODO: request the current state from the presenter
-        PresenterRemoteRequestState_t msg = { .id = RemoteRequestState};
-        GenerateLittleStateBloomHashes(&msg.state_hash1, &msg.state_hash2, &msg.state_hash3, &msg.state_hash4);
+        // Request the current state from the presenter
+        PRESENTER_REMOTEREQUESTSTATE(msg, 0,0,0,0);
+        littleStateFactory->GenerateLittleStateBloomHashes(&msg.state_hash1, &msg.state_hash2, &msg.state_hash3, &msg.state_hash4);
         int status = MeshSend(bridgeMac, (uint8_t*)&msg, sizeof(msg));
     }
 
@@ -62,24 +61,12 @@ private:
         // TODO: write display logic
     }
 
-    // TODO: create some sort of little state store that we can compile to another file that's consumed by presenter
-    // That way we know the hashes will match
-    void GenerateLittleStateBloomHashes(uint32_t* hash1, uint32_t* hash2, uint32_t* hash3, uint32_t* hash4) {
-        *hash1 = 0;
-        *hash2 = 0;
-        *hash3 = 0;
-        *hash4 = 0;
-        std::for_each(allLittleStates.begin(), allLittleStates.end(), [hash1,hash2,hash3,hash4](RemoteLittleState* x){ x->GenerateLittleStateBloomHashes(hash1, hash2, hash3, hash4); });
-    }
-
 public:
 
     RemoteDevice(Print* printer, Callback rebootFunc, const uint8_t* mac = nullptr): BaseDevice(printer, rebootFunc, mac) {
         bridgeRequestTask = new PeriodicTask(1000, std::bind(&RemoteDevice::MeshRequestBridge, this));
         presenterRequestTask = new PeriodicTask(1000, std::bind(&RemoteDevice::MeshPresenterRequestState, this));
-        // Create all little states
-        allLittleStates.push_back(new DarkLittleState(printer));
-        allLittleStates.push_back(new MultipleChoiceLittleState(printer));
+        littleStateFactory = new LittleStateFactory(printer);
     };
 
     RemoteBigStates getBigState() {
@@ -156,13 +143,10 @@ public:
             // We had our state set, we should be presenting if we aren't already
             // TODO: create a macro that wraps this check
             // assert(sizeof(PresenterSetState_t) == data_len);
-            PresenterPresenterSetState_t* state = (PresenterPresenterSetState_t*)data;
-            for (const auto littleState : allLittleStates) {
-                if (littleState->DoesMatchStateName(state->state_name, sizeof(state->state_name))) {
-                    this->littleState = littleState;
-                    break;
-                }
-            }
+            PresenterProtocolPresenterSetState_t* state = (PresenterProtocolPresenterSetState_t*)data;
+            this->littleState = littleStateFactory->GetMatchingLittleState(state->state_name, sizeof(state->state_name));
+            if (this->littleState == nullptr) this->printer->printf("Failed to get little state for %s\n", state->state_name);
+            else this->printer->printf("Got state for %s\n", state->state_name);
         }
         else {
             this->printer->printf("Unknown message %d\n", msgType);
@@ -175,10 +159,7 @@ public:
     }
 
     void ButtonPressed(uint8_t index) override {
-        PresenterRemoteButtonPressed_t msg = {
-            .id = RemoteButtonPressed,
-            .button_id = index
-        };
+        PRESENTER_REMOTEBUTTONPRESSED(msg, index);
         MeshSend(bridgeMac, (uint8_t*)&msg, sizeof(msg));
     }
 };

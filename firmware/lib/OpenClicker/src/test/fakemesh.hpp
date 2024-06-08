@@ -79,7 +79,7 @@ public:
         if (receiverMap.count(toMacId) == 1) {
             printf("[FakeMesh] This participant registered twice");
         }
-        printf("[FakeMesh] Adding receiver 0x%" PRIx64 "\n", toMacId);
+        printf("[FakeMesh] Adding receiver 0x%" PRIx64 " at %f,%f\n", toMacId, x, y);
         MeshEndpoint_t endpoint = {
             .receiver = callback,
             .x  = x,

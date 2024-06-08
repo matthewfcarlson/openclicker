@@ -3,9 +3,6 @@
 
 #pragma once
 
-const char* DARK_STATE_NAME = "dark";
-const char* MULTI_CHOICE_STATE_NAME = "mc";
-
 class RemoteLittleState {
 private:
    uint32_t djb2(const void *buff, size_t length, uint32_t DJB2_INIT) {
