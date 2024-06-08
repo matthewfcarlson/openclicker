@@ -28,7 +28,7 @@ var readyPromise = new Promise((resolve, reject) => {
   readyPromiseResolve = resolve;
   readyPromiseReject = reject;
 });
-["_message_string_to_json","_message_json_to_string","_generate_base64_little_state_hash_json","_memory","__Z26create_RemoteButtonPressedPhh","__Z26create_BridgeButtonPressedPhh","__Z22create_RemoteHeartBeatPhh","__Z25create_RemoteRequestStatePhjjjj","__Z33create_PresenterSetStateDarkStatePh","__Z43create_PresenterSetStateMultipleChoiceStatePhhPc","__Z34create_PresenterSetStateEmojiStatePhtttt","__Z24create_PresenterSetStatePhPc","__Z28create_PresenterRemotePacketPhS_","___indirect_function_table","onRuntimeInitialized"].forEach((prop) => {
+["_message_string_to_json","_message_json_to_string","_generate_base64_little_state_hash_json","_create_RemoteButtonPressed","_create_BridgeButtonPressed","_create_RemoteHeartBeat","_create_RemoteRequestState","_create_PresenterSetStateDarkState","_create_PresenterSetStateMultipleChoiceState","_create_PresenterSetStateEmojiState","_create_PresenterSetState","_create_PresenterRemotePacket","_memory","___indirect_function_table","onRuntimeInitialized"].forEach((prop) => {
   if (!Object.getOwnPropertyDescriptor(readyPromise, prop)) {
     Object.defineProperty(readyPromise, prop, {
       get: () => abort('You are getting ' + prop + ' on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js'),
@@ -1349,15 +1349,15 @@ var wasmImports = {
 };
 var wasmExports = createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
-var __Z26create_RemoteButtonPressedPhh = Module['__Z26create_RemoteButtonPressedPhh'] = createExportWrapper('_Z26create_RemoteButtonPressedPhh', 2);
-var __Z26create_BridgeButtonPressedPhh = Module['__Z26create_BridgeButtonPressedPhh'] = createExportWrapper('_Z26create_BridgeButtonPressedPhh', 2);
-var __Z22create_RemoteHeartBeatPhh = Module['__Z22create_RemoteHeartBeatPhh'] = createExportWrapper('_Z22create_RemoteHeartBeatPhh', 2);
-var __Z25create_RemoteRequestStatePhjjjj = Module['__Z25create_RemoteRequestStatePhjjjj'] = createExportWrapper('_Z25create_RemoteRequestStatePhjjjj', 5);
-var __Z33create_PresenterSetStateDarkStatePh = Module['__Z33create_PresenterSetStateDarkStatePh'] = createExportWrapper('_Z33create_PresenterSetStateDarkStatePh', 1);
-var __Z43create_PresenterSetStateMultipleChoiceStatePhhPc = Module['__Z43create_PresenterSetStateMultipleChoiceStatePhhPc'] = createExportWrapper('_Z43create_PresenterSetStateMultipleChoiceStatePhhPc', 3);
-var __Z34create_PresenterSetStateEmojiStatePhtttt = Module['__Z34create_PresenterSetStateEmojiStatePhtttt'] = createExportWrapper('_Z34create_PresenterSetStateEmojiStatePhtttt', 5);
-var __Z24create_PresenterSetStatePhPc = Module['__Z24create_PresenterSetStatePhPc'] = createExportWrapper('_Z24create_PresenterSetStatePhPc', 2);
-var __Z28create_PresenterRemotePacketPhS_ = Module['__Z28create_PresenterRemotePacketPhS_'] = createExportWrapper('_Z28create_PresenterRemotePacketPhS_', 2);
+var _create_RemoteButtonPressed = Module['_create_RemoteButtonPressed'] = createExportWrapper('create_RemoteButtonPressed', 2);
+var _create_BridgeButtonPressed = Module['_create_BridgeButtonPressed'] = createExportWrapper('create_BridgeButtonPressed', 2);
+var _create_RemoteHeartBeat = Module['_create_RemoteHeartBeat'] = createExportWrapper('create_RemoteHeartBeat', 2);
+var _create_RemoteRequestState = Module['_create_RemoteRequestState'] = createExportWrapper('create_RemoteRequestState', 5);
+var _create_PresenterSetStateDarkState = Module['_create_PresenterSetStateDarkState'] = createExportWrapper('create_PresenterSetStateDarkState', 1);
+var _create_PresenterSetStateMultipleChoiceState = Module['_create_PresenterSetStateMultipleChoiceState'] = createExportWrapper('create_PresenterSetStateMultipleChoiceState', 3);
+var _create_PresenterSetStateEmojiState = Module['_create_PresenterSetStateEmojiState'] = createExportWrapper('create_PresenterSetStateEmojiState', 5);
+var _create_PresenterSetState = Module['_create_PresenterSetState'] = createExportWrapper('create_PresenterSetState', 2);
+var _create_PresenterRemotePacket = Module['_create_PresenterRemotePacket'] = createExportWrapper('create_PresenterRemotePacket', 2);
 var _message_string_to_json = Module['_message_string_to_json'] = createExportWrapper('message_string_to_json', 1);
 var _message_json_to_string = Module['_message_json_to_string'] = createExportWrapper('message_json_to_string', 2);
 var _generate_base64_little_state_hash_json = Module['_generate_base64_little_state_hash_json'] = createExportWrapper('generate_base64_little_state_hash_json', 0);

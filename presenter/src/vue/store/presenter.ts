@@ -2,12 +2,12 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from "vue";
 import Module from "../../wasm/presenter";
-import { LittleStateNames, parsePresenterMessage, PresenterMessageId, ProtocolPresenterSetState } from '../../common/Protocol';
+import { LittleStateNames, parsePresenterMessage, PresenterMessageId, ProtocolPresenterSetState, MessageCreators, type PresenterMessage } from '../../common/Protocol';
 const ipcRenderer = window.require('electron').ipcRenderer;
 
 export const usePresenterStore = defineStore('presenter', () => {
     const meshDevices = ref(new Map());
-    const currentState = ref("dark");
+    const _wasm = ref(null);
 
     function sendRawMessageToRemote(msg:string) {
         ipcRenderer.invoke('message-from-presenter', msg);
@@ -25,6 +25,7 @@ export const usePresenterStore = defineStore('presenter', () => {
         })
     }
     Module().then((wasm) => {
+        _wasm.value = wasm;
         const little_state = JSON.parse(wasm.ccall('generate_base64_little_state_hash_json', 'string'));
         console.log("little_state", little_state,);
         ipcRenderer.on('message-to-presenter', (x, msg:string)=> {
@@ -39,21 +40,20 @@ export const usePresenterStore = defineStore('presenter', () => {
             // Respond to the message
             const from = data.from;
             const to = data.to;
-            const reply_msg: ProtocolPresenterSetState = {
-                id: PresenterMessageId.PresenterSetState,
-                state_name: LittleStateNames.DarkState
-            }
-            console.log(JSON.stringify(reply_msg))
-            const result = wasm.ccall('message_json_to_string', 'string', ['string','string'],[from, JSON.stringify(reply_msg) ]);
-            console.log("result", result);
-            sendRawMessageToRemote(result);
+            const reply_msg = MessageCreators.PresenterSetStateMultipleChoiceState(wasm, from, 4, "What is your favorite color?");
+            console.log("Reply: ", reply_msg);
+            sendRawMessageToRemote(reply_msg);
 
             // Step 2: if it's a state request, send our current state to all remotes
             // Step 2: if it is a heartbeat, update our current list of meshDevices
             // Step 3: publish the message to any subscribers for raw events
         });
+        let to = "01:02:03:04:05:06";
+        console.log("Dark", MessageCreators.PresenterSetStateDarkState(wasm, to));
+        console.log("MC", MessageCreators.PresenterSetStateMultipleChoiceState(wasm, to, 4, "What is your favorite color?"));
+        console.log("emoji", MessageCreators.PresenterSetStateEmojiState(wasm, to, 1,2,3,4));
     });
 
-    return {meshDevices, sendRawMessageToRemote, emitRawMessageToRemotes, getRemotes, currentState};
+    return {sendRawMessageToRemote, emitRawMessageToRemotes, getRemotes};
     //
 });

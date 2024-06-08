@@ -2,6 +2,8 @@ EMCC = emcc
 REMOTE_SOURCES = web/main.cpp web/webgl.c
 PRESENTER_SOURCES = web/presenter.cpp
 
+include web/generated.mk
+
 REMOTE_EMFLAGS = -s --js-library web/library.js --closure 1 -s TEXTDECODER=2    \
           -s MIN_WEBGL_VERSION=1 -s MAX_WEBGL_VERSION=2    \
 		  -s ABORTING_MALLOC=0 -s ENVIRONMENT=web                               \
@@ -14,7 +16,7 @@ REMOTE_EMFLAGS = -s --js-library web/library.js --closure 1 -s TEXTDECODER=2    
 		  -s GL_TRACK_ERRORS=1 -lGL -O3 -s WASM=1 -sMODULARIZE=0
 
 PRESENTER_EMFLAGS = -sMODULARIZE=1 -s ENVIRONMENT=web \
-    	-sEXPORTED_FUNCTIONS="['_message_string_to_json', "_message_json_to_string", "_generate_base64_little_state_hash_json"]" -s EXPORTED_RUNTIME_METHODS=['ccall'] \
+    	-sEXPORTED_FUNCTIONS="[$(PRESENTER_EXPORTED_FUNCTIONS)]" -s EXPORTED_RUNTIME_METHODS=['ccall'] \
 		-sEXPORT_ES6=1 -sEXPORT_NAME=OpenClicker
 
 remote: clean

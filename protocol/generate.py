@@ -21,6 +21,15 @@ class PresenterMessageId(enum.IntEnum):
     PresenterSetState = enum.auto(),
     PresenterRemotePacket = enum.auto(),
 
+# these are functions that presenter will never send out
+IGNORED_PRESENTER_OUT_FUNCTIONS = [
+    PresenterMessageId.PresenterRemotePacket.name,
+    PresenterMessageId.RemoteButtonPressed.name,
+    PresenterMessageId.BridgeButtonPressed.name,
+    PresenterMessageId.RemoteHeartBeat.name,
+    PresenterMessageId.RemoteRequestState.name,
+]
+
 class PresenterLittleStates(enum.StrEnum):
     # these are the little states that the presenter can tell remotes to be in
     DarkState = 'dark',
@@ -35,7 +44,7 @@ class Definitions:
     uint32_t = ['uint32_t','z.number().int().nonnegative().lte(0xFFFFFFFF)', '32bit unsigned integer']
     char32_little_state = ['char[20]','LittleStateNamesZ', '20 character string that is a little state name']
     char64 = ['char[64]','z.string().max(63)', '64 character (including null terminator) string']
-    mac_address = ['uint8_t[8]','z.string().length(17)', 'A 6 byte mac address that is encoded in and out of a string for ease'] # 05:fc:4f:d7:11:a5
+    mac_address = ['uint8_t[6]','z.string().length(17)', 'A 6 byte mac address that is encoded in and out of a string for ease'] # 05:fc:4f:d7:11:a5
 
 STRUCTS = {
     PresenterMessageId.RemoteButtonPressed.value: {
@@ -77,6 +86,7 @@ STRUCTS = {
 
 C_TYPE_TO_PRINT = {
     'uint8_t': 'u',
+    'uint8_t[6]': 's',
     'uint16_t': 'u',
     'uint32_t': 'u',
     'char[32]': 's',
@@ -110,8 +120,8 @@ def generate_message_structs():
             'fields': STRUCTS.get(message_id.value, {}),
             'literal_fields': base_literal_fields
         }
-       
-           
+
+
 
 class CommonFileGenBase:
     def __init__(self, fp:TextIOWrapper):
@@ -184,13 +194,35 @@ class TypescriptFileGen(CommonFileGenBase):
         self.fp.write(";\n\n")
 
     def write_parsers(self, message_struct_generator):
+        messages_structs = list(message_struct_generator)
         self.fp.write("export function parsePresenterMessage(data: object, warn=false) {\n")
-        for message_struct in message_struct_generator:
+        for message_struct in messages_structs:
             struct_name = self.get_struct_name(message_struct['name'])
             self.fp.write("    try {\n")
             self.fp.write(f"        return {struct_name}Z.parse(data);\n")
             self.fp.write("    } catch(e) { if (warn) console.warn(e)}\n\n")
         self.fp.write("}\n")
+
+        self.fp.write("export const MessageCreators = {\n")
+        for message_struct in messages_structs:
+            if message_struct['name'] in IGNORED_PRESENTER_OUT_FUNCTIONS:
+                continue
+            struct_name = self.get_struct_name(message_struct['name'])
+            self.fp.write(f"  {message_struct['name']}(\n")
+            fields = ["   wasm: any", "   to_mac: string"]
+            field_names = []
+            for field_name, field in message_struct['fields'].items():
+                field_names.append(field_name)
+                fields.append(f"   {field_name}: {struct_name}['{field_name}']")
+            self.fp.write(",\n".join(fields))
+            self.fp.write("\n  ) {\n")
+            self.fp.write("    let func_name = 'create_"+message_struct['name']+"';\n")
+            #  wasm.ccall(
+            # look at C_TYPES_TO_PRINT to determine the type
+            types = ["'string'" if C_TYPE_TO_PRINT[message_struct['fields'][field][0]] == 's' else "'number'" for field in field_names] 
+            self.fp.write(f"    return wasm.ccall(func_name, 'string', [{",".join(['"string"',]+types)}], [{",".join(["to_mac",]+field_names)}]);\n")
+            self.fp.write("  },\n")
+        self.fp.write("};\n")
 
 class CHeaderFileGen(CommonFileGenBase):
     def write_common_header(self):
@@ -201,7 +233,7 @@ class CHeaderFileGen(CommonFileGenBase):
         for include in ["stdint.h", "stdlib.h", "stdio.h", "strings.h"]:
             self.fp.write(f"#include <{include}>\n")
         self.fp.write("\n")
-        
+
 
     def get_struct_name(self, name):
         return f"PresenterProtocol{name}"
@@ -338,7 +370,7 @@ class CHelpersFileGen(CommonFileGenBase):
                 if arg:
                     args.append(arg)
                 fmt.append(f'\\\"{field_name}\\\":{format_str}')
-            
+
             return "{"+",".join(fmt)+"}", args
 
         # start with mac address wrapped functions
@@ -366,8 +398,8 @@ class CHelpersFileGen(CommonFileGenBase):
 
         # now start with functions that generate the message
         for message_struct in message_structs:
-            self.fp.write(f"char* EMSCRIPTEN_KEEPALIVE create_{message_struct['name']}(\n")
-            params = ["uint8_t* mac_addr"]
+            self.fp.write(f"extern \"C\" char* create_{message_struct['name']}(\n")
+            params = ["char* mac_addr_str"]
             fields = message_struct['fields']
             for field_name, field in fields.items():
                 field_c_type = field[0]
@@ -382,6 +414,9 @@ class CHelpersFileGen(CommonFileGenBase):
             # now we need to generate the message
             keys = ["msg",] + list(fields.keys())
             self.fp.write(f"    PRESENTER_{message_struct['name'].upper()}({', '.join(keys)});\n")
+            self.fp.write("    uint8_t mac_addr[8];\n")
+            self.fp.write("    uint32_t mac_addr_str_len = strnlen(mac_addr_str, 22);\n")
+            self.fp.write("    transport->ReadMacFromString(mac_addr_str, &mac_addr_str_len, mac_addr);\n")
             self.fp.write("    char* msg_txt = (char*)malloc(msg_text_size);\n")
             self.fp.write("    if (msg_txt == NULL) return nullptr;\n")
             self.fp.write("    bzero(msg_txt, msg_text_size);\n")
@@ -389,6 +424,17 @@ class CHelpersFileGen(CommonFileGenBase):
             self.fp.write("    return msg_txt;\n")
             self.fp.write("}\n")
 
+class MakefileFileGen(CommonFileGenBase):
+    def write_common_header(self):
+        self.fp.write(f"# AUTOGENERATED ON {datetime.datetime.now()}\n")
+        pass
+
+    def write_parsers(self, message_struct_generator):
+        self.fp.write("PRESENTER_EXPORTED_FUNCTIONS = ")
+        functions = ['_message_string_to_json', "_message_json_to_string", "_generate_base64_little_state_hash_json"]
+        for message_struct in message_struct_generator:
+            functions.append(f"_create_{message_struct['name']}")
+        self.fp.write(",".join([f'"{x}"' for x in functions]))
 
 def main():
     # first we need to find the path of the folder this file is in
@@ -400,18 +446,27 @@ def main():
     firmware_path = root_dir / "firmware" / "lib" / "OpenClicker" / "include" / "protocol" / "presenter_protocol.h"
     # now get the path to emscripten file
     emscripten_path = root_dir / "firmware" / "lib" / "OpenClicker" / "web" / "helpers.hpp"
+
     # now we need to generate the typescript
     protocol_path.unlink(missing_ok=True)
     with open(protocol_path, "w") as fp:
         TypescriptFileGen(fp)
+
     # generate c header
     firmware_path.unlink(missing_ok=True)
     with open(firmware_path, "w") as fp:
         CHeaderFileGen(fp)
+
     # generate c helpers
     emscripten_path.unlink(missing_ok=True)
     with open(emscripten_path, "w") as fp:
         CHelpersFileGen(fp)
+
+    makefile_path = root_dir / "firmware" / "lib" / "OpenClicker" / "web" / "generated.mk"
+    makefile_path.unlink(missing_ok=True)
+    with open(makefile_path, "w") as fp:
+        MakefileFileGen(fp)
+
     return 0
 
 
