@@ -9,9 +9,7 @@
 #include <bridge/bridge.hpp>
 #include <test/fakemesh.hpp>
 #include "js_transport.hpp"
-
-#define WIDTH 320
-#define HEIGHT 170
+#include "webgl_adapter.hpp"
 
 static inline const char *emscripten_event_type_to_string(int eventType) {
   const char *events[] = { "(invalid)", "(none)", "keypress", "keydown", "keyup", "click", "mousedown", "mouseup", "dblclick", "mousemove", "wheel", "resize",
@@ -100,7 +98,7 @@ BridgeDevice* bridge;
 JSBridgeTransport* presenter;
 
 void loop(double t, double dt) {
-  draw_frame(t, dt);
+  // draw_frame(t, dt);
   remote->Loop();
   bridge->Loop();
 }
@@ -206,7 +204,7 @@ int main()
   // Remote
   NamespacedPrinter* remotePrint = new NamespacedPrinter("remote");
   for (int i=0; i < 6; i++) remote_mac[i] = (int8_t)(255 * emscripten_random());
-  remote = new RemoteDevice(remotePrint, reboot_unexpected, remote_mac);
+  remote = new RemoteDevice(remotePrint, reboot_unexpected, remote_mac, new RemoteGraphicsWebgl());
   FakeMeshCommunicator* remote_comm = new FakeMeshCommunicator(mesh);
   remote_comm->registerDevice(remote);
   // Bridge
