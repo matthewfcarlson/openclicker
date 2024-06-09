@@ -140,7 +140,7 @@ public:
         // Serial print this to the console
         char message[512] = {0};
         ConvertMessageToString(from_mac_addr, PRESENTER_MAC, data, data_len, message, sizeof(message));
-        printf("PRESENTER: %s\n", message);
+        printf("PRESENTER %d: %s\n", data[0], message);
     }
 
     virtual void SendTextMessageToBridge(const char* msg, uint32_t msg_size) {
@@ -218,6 +218,7 @@ public:
         // Check if it's remote to remote and we should respond
         if (type == BridgeRequest) {
             MeshAddPeer(mac_addr, 0);
+            this->printer->printf("Received BridgeRequest\n");
             RemoteMessageBridgeResponse_t msg = {.id = BridgeResponse};
             int status = MeshSend(mac_addr, (uint8_t*)&msg, sizeof(msg));
             if (status != MESH_OK){
@@ -225,6 +226,7 @@ public:
             }
         }
         else {
+            this->printer->printf("Forwarding message to bridge: %d\n", type);
             transport->SendMessageToPresenter(mac_addr, data, data_len);
         }
     }
@@ -239,6 +241,7 @@ public:
         //     .id = BridgeButtonPressed,
         //     .button_id = index
         // };
+        this->printer->printf("Button %d pressed\n", index);
         transport->SendMessageToPresenter(this->macAddress, (const uint8_t*)&msg, sizeof(msg));
     }
 };

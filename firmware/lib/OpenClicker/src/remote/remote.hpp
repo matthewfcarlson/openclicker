@@ -34,15 +34,21 @@ private:
     uint8_t bridgeMac[6] = {0};
  
     void MeshRequestBridge() {
-        uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+        this->printer->printf("Requesting bridge. Please come in\n");
         RemoteMessageBridgeRequest_t msg = { .id = BridgeRequest};
-        int status = MeshSend(broadcast_mac, (uint8_t*)&msg, sizeof(msg));
+        int status = MeshSend(BROADCAST_MAC, (uint8_t*)&msg, sizeof(msg));
+        if (status != MESH_OK) {
+            this->printer->printf("Failed to send bridge request: %x\n", status);
+        }
     }
     void MeshPresenterRequestState() {
         // Request the current state from the presenter
         PRESENTER_REMOTEREQUESTSTATE(msg, 0,0,0,0);
         littleStateFactory->GenerateLittleStateBloomHashes(&msg.state_hash1, &msg.state_hash2, &msg.state_hash3, &msg.state_hash4);
         int status = MeshSend(bridgeMac, (uint8_t*)&msg, sizeof(msg));
+        if (status != MESH_OK) {
+            this->printer->printf("Failed to request state: %x\n", status);
+        }
     }
 
     void DisplaySetToConnecting() {
@@ -159,6 +165,7 @@ public:
     }
 
     void ButtonPressed(uint8_t index) override {
+        this->printer->printf("Button %d pressed\n", index);
         PRESENTER_REMOTEBUTTONPRESSED(msg, index);
         MeshSend(bridgeMac, (uint8_t*)&msg, sizeof(msg));
     }

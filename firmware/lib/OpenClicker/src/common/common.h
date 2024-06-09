@@ -36,7 +36,7 @@ typedef int mesh_err_t;
 #define MESH_ERR_MEMPROT_BASE        0xd000  /*!< Starting number of Memory Protection API error codes */
 #define MESH_ERR_TEST_BASE           0xe000  /*!< Starting number of Memory Protection API error codes */
 
-#define MESH_ERR_ESPNOW_BASE         (MESH_ERR_WIFI_BASE + 100) /*!< ESPNOW error number base. */
+#define MESH_ERR_ESPNOW_BASE         (MESH_ERR_WIFI_BASE + 0x100) /*!< ESPNOW error number base. */
 #define MESH_ERR_ESPNOW_NOT_INIT     (MESH_ERR_ESPNOW_BASE + 1) /*!< ESPNOW is not initialized. */
 #define MESH_ERR_ESPNOW_ARG          (MESH_ERR_ESPNOW_BASE + 2) /*!< Invalid argument */
 #define MESH_ERR_ESPNOW_NO_MEM       (MESH_ERR_ESPNOW_BASE + 3) /*!< Out of memory */
@@ -48,8 +48,12 @@ typedef int mesh_err_t;
 
 #define MESH_MAX_DATA_LEN         250       /*!< Maximum length of ESPNOW data which is sent very time */
 
+#define MESH_DEFAULT_CHANNEL 0
+
 const uint8_t PRESENTER_MAC[6] = {0xAF, 0xAF, 0xAF, 0xAF, 0xAF, 0xAF};
 const char*   PRESENTER_MAC_STR = "af:af:af:af:af:af";
+const uint8_t BROADCAST_MAC[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+const char*   BROADCAST_MAC_STR = "ff:ff:ff:ff:ff:ff";
 
 typedef std::function<mesh_err_t(const uint8_t* mac_addr, uint8_t channel)> MeshAddPeer_t;
 typedef void (*Callback)();
@@ -86,6 +90,7 @@ protected:
             Reboot();
             return MESH_ERR_INVALID_STATE;
         }
+        this->printer->printf("Sending message %d bytes of type%d to %02x:%02x:%02x:%02x:%02x:%02x\n", data_len, data[0], mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
         return this->meshSendFunc(mac_addr, data, data_len);
     }
 
