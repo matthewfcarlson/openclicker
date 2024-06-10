@@ -6,6 +6,11 @@
 #include <algorithm>
 #include <vector>
 #include <remote/little_states/little_state_factory.hpp>
+// graphics
+#include <remote/graphics/Alert.h>
+#include <remote/graphics/Close.h>
+#include <remote/graphics/Cards.h>
+#include <remote/graphics/Info.h>
 
 #pragma once
 
@@ -25,6 +30,10 @@ class RemoteGraphicsAdapter {
 protected:
     bool screenOn = false;
 public:
+    const RemoteGraphic_t* GRAPHIC_ALERT_ICON = &Graphics_Alert;
+    const RemoteGraphic_t* GRAPHIC_INFO_ICON = &Graphics_Info;
+    const RemoteGraphic_t* GRAPHIC_CLOSE_ICON = &Graphics_Close;
+    const RemoteGraphic_t* GRAPHIC_CARD_0 = &Graphics_card0;
     static const uint32_t COLOR_BLACK       = 0x0000;      /*   0,   0,   0 */
     static const uint32_t COLOR_NAVY        = 0x000F;      /*   0,   0, 128 */
     static const uint32_t COLOR_DARKGREEN   = 0x03E0;      /*   0, 128,   0 */
@@ -51,13 +60,15 @@ public:
     static const uint32_t COLOR_VIOLET      = 0x915C;      /* 180,  46, 226 */
     virtual bool FillScreen(uint32_t color) = 0;
     virtual bool TurnOff() = 0;
+    virtual bool DrawImage(const RemoteGraphic_t* graphic, uint32_t x, uint32_t y) = 0;
+
 };
 
 class RemoteGraphicsTextAdapter: public RemoteGraphicsAdapter {
 private:
     Print* printer;
 public:
-    RemoteGraphicsTextAdapter(Print* printer): printer(printer) {}
+    RemoteGraphicsTextAdapter(Print* printer): printer(printer), RemoteGraphicsAdapter() {}
     bool FillScreen(uint32_t color) override {
         screenOn = true;
         printer->printf("[gfx] Filling screen with color %x\n", color);
@@ -66,6 +77,11 @@ public:
     bool TurnOff() override {
         printer->printf("[gfx] Turning off screen\n");
         screenOn = false;
+        return true;
+    }
+
+    bool DrawImage(const RemoteGraphic_t* graphic, uint32_t x, uint32_t y) override {
+        printer->printf("[gfx] Drawing image %s at %d %d\n", graphic->tag, x, y);
         return true;
     }
 };
@@ -80,9 +96,9 @@ private:
     RemoteLittleState* littleState = nullptr;
     LittleStateFactory* littleStateFactory;
     RemoteGraphicsAdapter* graphics;
-    
+
     uint8_t bridgeMac[6] = {0};
- 
+
     void MeshRequestBridge() {
         this->printer->printf("Requesting bridge. Please come in\n");
         RemoteMessageBridgeRequest_t msg = { .id = BridgeRequest};
@@ -113,8 +129,12 @@ private:
     }
 
     void DisplaySetToConnected() {
-        graphics->FillScreen(graphics->COLOR_GREEN);
+        graphics->FillScreen(graphics->COLOR_PINK);
         // TODO: write display logic
+        graphics->DrawImage(graphics->GRAPHIC_ALERT_ICON, 10, 10);
+        graphics->DrawImage(graphics->GRAPHIC_CLOSE_ICON, 50, 10);
+        graphics->DrawImage(graphics->GRAPHIC_INFO_ICON, 100, 10);
+        graphics->DrawImage(graphics->GRAPHIC_CARD_0, 120, 50);
     }
 
     void DisplaySetToError() {
@@ -148,7 +168,7 @@ public:
         RemoteBigStates nextBigState = bigState;
         if (currentBigState == RemoteBigInit) {
             bzero(bridgeMac, sizeof(bridgeMac));
-            // Setup the screen 
+            // Setup the screen
             nextBigState = RemoteBigConnecting;
             DisplaySetToConnecting();
         }

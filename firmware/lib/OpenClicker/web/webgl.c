@@ -2,6 +2,7 @@
 #include <emscripten.h>
 #include <emscripten/html5.h>
 #include <string.h>
+#include <stdio.h>
 
 void upload_unicode_char_to_texture(int unicodeChar, int charSize, int applyShadow);
 void load_texture_from_url(GLuint texture, const char *url, int *outWidth, int *outHeight);
@@ -127,7 +128,8 @@ void EMSCRIPTEN_KEEPALIVE clear_screen(float r, float g, float b, float a)
 
 static void fill_textured_rectangle(float x0, float y0, float x1, float y1, float r, float g, float b, float a, GLuint texture)
 {
-  float mat[16] = { (x1-x0)*pixelWidth, 0, 0, 0, 0, (y1-y0)*pixelHeight, 0, 0, 0, 0, 1, 0, x0*pixelWidth-1.f, y0*pixelHeight-1.f, 0, 1};
+  printf("[gfx] Drawing at %f, %f to %f, %f\n", x0, y0, x1, y1);
+  float mat[16] = { (x1-x0)*pixelWidth, 0, 0, 0, 0, (y1-y0)*pixelHeight, 0, 0, 0, 0, 1, 0, (x0*pixelWidth)-1.f, (y0*pixelHeight)-1.f, 0, 1};
   glUniformMatrix4fv(matPos, 1, 0, mat);
   glUniform4f(colorPos, r, g, b, a);
   glBindTexture(GL_TEXTURE_2D, texture);
@@ -166,10 +168,61 @@ static Texture *find_or_cache_url(const char *url)
   return 0; // fail
 }
 
+static void load_texture_from_buffer(Texture* texture, const void* img_data, int w, int h) {
+  glPixelStorei(0x9240/*GLctx.UNPACK_FLIP_Y_WEBGL*/, 1);
+  uint32_t image_size = w * h * 2;
+  uint32_t rgba_image_size = w * h * 4;
+  uint32_t* rgba_data = (uint32_t*)malloc(rgba_image_size);
+  bzero(rgba_data, rgba_image_size);
+  for (int i =0; i < (w*h); i++) {
+    uint16_t color = ((uint16_t*)img_data)[i];
+    if (color == 0x0120) {
+      continue;
+    }
+    uint8_t red = (color >> 11 & 0x1F) << 3; // red = 5 bits
+    uint8_t green = ((color >> 5) & 0x3F) << 2; // green = 6 bits
+    uint8_t blue = (color & 0x1F) << 3; // blue = 5 bits
+    rgba_data[i] = (0xFF << 24) | (blue << 16) | (green << 8) | (red);
+  }
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba_data);
+  // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, img_data);
+  free(rgba_data);
+  glPixelStorei(0x9240/*GLctx.UNPACK_FLIP_Y_WEBGL*/, 0);
+  texture->w = w;
+  texture->h = h;
+}
+
+static Texture *find_or_cache_tag(const char *tag, const void* img_data, int w, int h) {
+  for(int i = 0; i < MAX_TEXTURES; ++i) // Naive O(n) lookup for tiny code size
+    if (!strcmp(textures[i].url, tag))
+      return textures+i;
+    else if (!textures[i].url)
+    {
+      textures[i].url = strdup(tag);
+      textures[i].texture = create_texture();
+      load_texture_from_buffer(&textures[i], img_data, w, h);
+      return textures+i;
+    }
+  return 0; // fail
+}
+
+void EMSCRIPTEN_KEEPALIVE load_image_by_tag(const char *tag, const void* data, int w, int h) {
+  find_or_cache_tag(tag, data, w, h);
+}
+
 void EMSCRIPTEN_KEEPALIVE fill_image(float x0, float y0, float scale, float r, float g, float b, float a, const char *url)
 {
   Texture *t = find_or_cache_url(url);
   fill_textured_rectangle(x0, y0, x0 + t->w * scale, y0 + t->h * scale, r, g, b, a, t->texture);
+}
+
+void EMSCRIPTEN_KEEPALIVE fill_image_tag(float x0, float y0, const char *tag)
+{
+  Texture *t = find_or_cache_url(tag);
+  if (t == NULL) return; // TODO: handle this better
+  float x1 = x0 + ((float)t->w);
+  float y1 = y0 + ((float)t->h);
+  fill_textured_rectangle(x0, y0, x1, y1, 1.0, 1.0, 1.0, 1.0f, t->texture);
 }
 
 typedef struct Glyph

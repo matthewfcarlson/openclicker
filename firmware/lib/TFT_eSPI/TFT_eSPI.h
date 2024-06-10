@@ -316,7 +316,7 @@ const PROGMEM fontinfo fontdata [] = {
 // and will then decode back to the same 16 bit value.
 // Convenient for 8 bit and 16 bit transparent sprites.
 #define TFT_TRANSPARENT 0x0120 // This is actually a dark green
-
+// 0000 0001 0010
 // Default palette for 4 bit colour sprites
 static const uint16_t default_4bit_palette[] PROGMEM = {
   TFT_BLACK,    //  0  ^

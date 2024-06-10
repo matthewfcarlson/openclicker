@@ -28,6 +28,12 @@ void fill_text(float x0, float y0, float r, float g, float b, float a, const cha
 // Draws an image from given url to pixel coordinates x0,y0, applying uniform scaling factor scale, modulated with rgba. 
 void fill_image(float x0, float y0, float scale, float r, float g, float b, float a, const char *url);
 
+// Draws an image from given tag to pixel coordinates x0,y0
+void fill_image_tag(float x0, float y0, const char *tag);
+
+// Loads and caches an image so we can draw it later.
+void load_image_by_tag(const char *tag, const void* data, int w, int h);
+
 // Plays the given audio file, looping infinitely if loop is nonzero.
 void play_audio(const char *url, int loop);
 
