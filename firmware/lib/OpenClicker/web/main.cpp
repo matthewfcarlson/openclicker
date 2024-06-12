@@ -124,7 +124,7 @@ extern "C" const char* fake_presenter_state_dark() {
 
 int main()
 {
-  init_webgl(WIDTH, HEIGHT);
+  init_webgl(TFT_WIDTH, TFT_HEIGHT);
   // EMSCRIPTEN_RESULT ret = emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, key_callback);
   emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, key_callback);
   emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 1, key_callback);

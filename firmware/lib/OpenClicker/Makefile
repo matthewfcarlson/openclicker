@@ -19,12 +19,15 @@ PRESENTER_EMFLAGS = -sMODULARIZE=1 -s ENVIRONMENT=web \
     	-sEXPORTED_FUNCTIONS="[$(PRESENTER_EXPORTED_FUNCTIONS)]" -s EXPORTED_RUNTIME_METHODS=['ccall'] \
 		-sEXPORT_ES6=1 -sEXPORT_NAME=OpenClicker
 
-remote: clean
+imagegen: 
+	python3 images/generate.py
+
+remote: clean imagegen
 	$(EMCC) $(REMOTE_EMFLAGS) $(REMOTE_SOURCES) -I src -I include -o out/remote.html
 	cp out/remote.js ../../../presenter/src/wasm
 	cp out/remote.wasm ../../../presenter/src/wasm
 
-presenter: clean
+presenter: clean imagegen
 	$(EMCC) $(PRESENTER_EMFLAGS) $(PRESENTER_SOURCES) -I src -I include -I web -o out/presenter.js
 	cp out/presenter.js ../../../presenter/src/wasm
 	cp out/presenter.wasm ../../../presenter/src/wasm

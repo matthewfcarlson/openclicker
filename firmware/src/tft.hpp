@@ -73,9 +73,10 @@ public:
         digitalWrite(PIN_LCD_BL, LOW);
         return true;
     }
-    bool FillScreen(uint32_t color) override {
+    bool FillScreen(uint16_t color) override {
         if (!screenOn) TurnOn();
         Serial.printf("[gfx] Filling screen with color %x\n", color);
+        lastBackgroundColor = color;
         tft.fillScreen(color);
         return true;
     }
