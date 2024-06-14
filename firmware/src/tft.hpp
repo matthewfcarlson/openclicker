@@ -86,4 +86,11 @@ public:
         tft.pushImage(x,y, graphic->width, graphic->height, (uint16_t*)graphic->data, 0x0120);
         return true;
     }
+
+    bool DrawText(const char* text, uint32_t x, uint32_t y) {
+        tft.setTextSize(1);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        tft.drawString(text, x, y, 4);
+        return true;
+    }
 };

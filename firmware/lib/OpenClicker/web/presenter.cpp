@@ -40,7 +40,7 @@ extern "C" const char* message_json_to_string(const char* to_mac_str, const char
 
 extern "C" const char* generate_base64_little_state_hash_json() {
     PRESENTER_REMOTEREQUESTSTATE(msg, 0,0,0,0);
-    LittleStateFactory* factory = new LittleStateFactory(VoidPrint);
+    LittleStateFactory* factory = new LittleStateFactory(VoidPrint, nullptr);
     factory->GenerateLittleStateBloomHashes(&msg.state_hash1, &msg.state_hash2, &msg.state_hash3, &msg.state_hash4);
     uint8_t* data = (uint8_t*)&msg;
     uint32_t data_len = sizeof(msg);

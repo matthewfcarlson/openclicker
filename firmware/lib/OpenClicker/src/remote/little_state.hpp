@@ -1,4 +1,5 @@
 #include "common/common.h"
+#include <remote/remote_graphics.hpp>
 #include <stdbool.h>
 
 #pragma once
@@ -79,6 +80,7 @@ private:
     }
 protected:
     Print* printer;
+    RemoteGraphicsAdapter* graphics;
 
     void HashStringToLittleBloomHash(char* name, uint32_t name_len, uint32_t* hash1, uint32_t* hash2, uint32_t* hash3, uint32_t* hash4) {
         // this->printer->printf("Hashing %s into %x %x %x %x\n", name, *hash1, *hash2, *hash3, *hash4);
@@ -91,11 +93,27 @@ protected:
     }
 
 public:
-    RemoteLittleState(Print* printer): printer(printer) {}
+    RemoteLittleState(Print* printer, RemoteGraphicsAdapter* graphics): printer(printer), graphics(graphics) {}
 
     virtual bool DoesMatchStateName(char* name, uint32_t name_len) {
         return false;
     }
 
+    virtual void Start() = 0;
+    virtual void Stop() = 0;
+
     virtual void GenerateLittleStateBloomHashes(uint32_t* hash1, uint32_t* hash2, uint32_t* hash3, uint32_t* hash4) = 0;
+
+    // If we return true, prevent the default event from being triggered
+    virtual bool ButtonPressed(uint8_t index) {
+        return true;
+    }
+    virtual bool ButtonReleased(uint8_t index) {
+        return true;
+    }
+
+    virtual void HandlePresenterMessage(const uint8_t* data, uint32_t data_size) = 0;
+
+    // The loop is intentionally a no-op
+    virtual void Loop() {}
 };

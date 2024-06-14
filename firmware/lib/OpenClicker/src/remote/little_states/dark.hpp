@@ -1,4 +1,5 @@
 #include <remote/little_state.hpp>
+#include <remote/remote_graphics.hpp>
 #include <protocol/presenter_protocol.h>
 
 #pragma once
@@ -6,7 +7,7 @@
 class DarkLittleState : public RemoteLittleState {
 
 public:
-    DarkLittleState(Print* printer): RemoteLittleState(printer) {}
+    DarkLittleState(Print* printer, RemoteGraphicsAdapter *graphics): RemoteLittleState(printer, graphics) {}
 
     bool DoesMatchStateName(char* name, uint32_t name_len) {
         return strncmp(LITTE_STATE_DARKSTATE_NAME, name, name_len) == 0;
@@ -18,4 +19,17 @@ public:
         strncpy(name, LITTE_STATE_DARKSTATE_NAME, sizeof(name));
         HashStringToLittleBloomHash(name, sizeof(name), hash1, hash2, hash3, hash4);
     }
+
+    void Start() {
+        // TODO: turn off the screen and go into low power mode?
+        graphics->TurnOff();
+    }
+
+    // Dark mode doesn't respond to any messages, just is dormant
+    void HandlePresenterMessage(const uint8_t* data, uint32_t data_size) {}
+
+    // Dark mode doesn't have anything to clean up
+    // perhaps go back into a higher power state?
+    void Stop() {}
+
 };

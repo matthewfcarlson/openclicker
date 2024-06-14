@@ -1,3 +1,4 @@
+#include <remote/little_state.hpp>
 #include "dark.hpp"
 #include "multiple_choice.hpp"
 #include <common/print.hpp>
@@ -12,10 +13,10 @@ class LittleStateFactory {
 private:
     std::vector<RemoteLittleState*> allLittleStates= {};
 public:
-    LittleStateFactory(Print* printer) {
+    LittleStateFactory(Print* printer, RemoteGraphicsAdapter* graphicsAdapter) {
         // Create all little states
-        allLittleStates.push_back(new DarkLittleState(printer));
-        allLittleStates.push_back(new MultipleChoiceLittleState(printer));
+        allLittleStates.push_back(new DarkLittleState(printer, graphicsAdapter));
+        allLittleStates.push_back(new MultipleChoiceLittleState(printer, graphicsAdapter));
     }
 
      // TODO: create some sort of little state store that we can compile to another file that's consumed by presenter

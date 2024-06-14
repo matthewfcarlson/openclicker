@@ -6,8 +6,7 @@
 #include <algorithm>
 #include <vector>
 #include <remote/little_states/little_state_factory.hpp>
-// graphics
-#include <images.h>
+#include <remote/remote_graphics.hpp>
 
 #pragma once
 
@@ -26,50 +25,6 @@ enum RemoteBigStates {
     RemoteBigError,
 };
 
-class RemoteGraphicsAdapter {
-protected:
-    bool screenOn = false;
-    uint16_t lastBackgroundColor = 0;
-public:
-    INCLUDE_ALL_IMAGES;
-    const RemoteGraphic_t* EMOJI_MOVIE_CAMERA = &Graphics_movie_camera_1f3a5;
-    static const uint16_t COLOR_BLACK       = 0x0000;      /*   0,   0,   0 */
-    static const uint16_t COLOR_NAVY        = 0x000F;      /*   0,   0, 128 */
-    static const uint16_t COLOR_DARKGREEN   = 0x03E0;      /*   0, 128,   0 */
-    static const uint16_t COLOR_DARKCYAN    = 0x03EF;      /*   0, 128, 128 */
-    static const uint16_t COLOR_MAROON      = 0x7800;      /* 128,   0,   0 */
-    static const uint16_t COLOR_PURPLE      = 0x780F;      /* 128,   0, 128 */
-    static const uint16_t COLOR_OLIVE       = 0x7BE0;      /* 128, 128,   0 */
-    static const uint16_t COLOR_LIGHTGREY   = 0xD69A;      /* 211, 211, 211 */
-    static const uint16_t COLOR_DARKGREY    = 0x7BEF;      /* 128, 128, 128 */
-    static const uint16_t COLOR_BLUE        = 0x001F;      /*   0,   0, 255 */
-    static const uint16_t COLOR_GREEN       = 0x07E0;      /*   0, 255,   0 */
-    static const uint16_t COLOR_CYAN        = 0x07FF;      /*   0, 255, 255 */
-    static const uint16_t COLOR_RED         = 0xF800;      /* 255,   0,   0 */
-    static const uint16_t COLOR_MAGENTA     = 0xF81F;      /* 255,   0, 255 */
-    static const uint16_t COLOR_YELLOW      = 0xFFE0;      /* 255, 255,   0 */
-    static const uint16_t COLOR_WHITE       = 0xFFFF;      /* 255, 255, 255 */
-    static const uint16_t COLOR_ORANGE      = 0xFDA0;      /* 255, 180,   0 */
-    static const uint16_t COLOR_GREENYELLOW = 0xB7E0;      /* 180, 255,   0 */
-    static const uint16_t COLOR_PINK        = 0xFE19;      /* 255, 192, 203 */ //Lighter pink, was 0xFC9F
-    static const uint16_t COLOR_BROWN       = 0x9A60;      /* 150,  75,   0 */
-    static const uint16_t COLOR_GOLD        = 0xFEA0;      /* 255, 215,   0 */
-    static const uint16_t COLOR_SILVER      = 0xC618;      /* 192, 192, 192 */
-    static const uint16_t COLOR_SKYBLUE     = 0x867D;      /* 135, 206, 235 */
-    static const uint16_t COLOR_VIOLET      = 0x915C;      /* 180,  46, 226 */
-    virtual bool FillScreen(uint16_t color) = 0;
-    virtual bool TurnOff() = 0;
-    void PreLoad() {
-        PreloadImage(GRAPHIC_ALERT_ICON);
-        PreloadImage(GRAPHIC_INFO_ICON);
-        PreloadImage(GRAPHIC_CLOSE_ICON);
-        PreloadImage(GRAPHIC_CARD_0);
-        PreloadImage(EMOJI_MOVIE_CAMERA);
-    }
-    virtual void PreloadImage(const RemoteGraphic_t* graphic) {}
-    virtual bool DrawImage(const RemoteGraphic_t* graphic, uint32_t x, uint32_t y) = 0;
-
-};
 
 class RemoteGraphicsTextAdapter: public RemoteGraphicsAdapter {
 private:
@@ -90,6 +45,11 @@ public:
 
     bool DrawImage(const RemoteGraphic_t* graphic, uint32_t x, uint32_t y) override {
         printer->printf("[gfx] Drawing image %s at %d %d\n", graphic->tag, x, y);
+        return true;
+    }
+
+    bool DrawText(const char* text, uint32_t x, uint32_t y) override {
+        printer->printf("[gfx] Drawing text %s at %d %d\n", text, x, y);
         return true;
     }
 };
@@ -126,23 +86,19 @@ private:
     }
 
     void DisplaySetToConnecting() {
-        // if (graphyi)
-        graphics->FillScreen(graphics->COLOR_BLUE);
-        // TODO: write display logic
+        graphics->FillScreen(graphics->COLOR_BLACK);
+        graphics->DrawImageCentered(&Graphics_icons_connecting);
+        graphics->DrawText("connecting...", TFT_WIDTH / 2, 20);
     }
 
     void DisplaySetToLowBattery() {
-        // TODO: write to display logic
         graphics->FillScreen(graphics->COLOR_YELLOW);
     }
 
     void DisplaySetToConnected() {
         graphics->FillScreen(graphics->COLOR_BLACK);
-        // TODO: write display logic
-        graphics->DrawImage(graphics->GRAPHIC_ALERT_ICON, 10, 10);
-        graphics->DrawImage(graphics->GRAPHIC_CLOSE_ICON, 50, 10);
-        graphics->DrawImage(graphics->GRAPHIC_INFO_ICON, 100, 10);
-        graphics->DrawImage(graphics->EMOJI_MOVIE_CAMERA, 120, (TFT_HEIGHT/2) - 30);
+        graphics->DrawImageCentered(&Graphics_icons_connected);
+        graphics->DrawText("connected", TFT_WIDTH / 2, 20);
     }
 
     void DisplaySetToError() {
@@ -156,10 +112,10 @@ public:
     {
         bridgeRequestTask = new PeriodicTask(1000, std::bind(&RemoteDevice::MeshRequestBridge, this));
         presenterRequestTask = new PeriodicTask(1000, std::bind(&RemoteDevice::MeshPresenterRequestState, this));
-        littleStateFactory = new LittleStateFactory(printer);
         if (graphics == nullptr) this->graphics = new RemoteGraphicsTextAdapter(printer);
         else this->graphics = graphics;
         this->graphics->PreLoad();
+        littleStateFactory = new LittleStateFactory(printer, this->graphics);
     };
 
     RemoteBigStates getBigState() {
@@ -211,6 +167,10 @@ public:
             this->printer->printf("State %x->%x\n", currentBigState, nextBigState);
             this->bigState = nextBigState;
         }
+
+        if (littleState != nullptr) {
+            littleState->Loop();
+        }
     }
 
     void MeshOnSend(const uint8_t* mac_addr, uint8_t status) override  {
@@ -234,17 +194,27 @@ public:
             MeshAddPeer(mac_addr, 0);
             memcpy(bridgeMac, mac_addr, sizeof(bridgeMac));
         }
-        else if (msgType == PresenterSetState) {
-            // We had our state set, we should be presenting if we aren't already
+        else if (msgType == PresenterSetState && data_len >= sizeof(PresenterProtocolPresenterSetState_t)) {
             // TODO: create a macro that wraps this check
             // assert(sizeof(PresenterSetState_t) == data_len);
             PresenterProtocolPresenterSetState_t* state = (PresenterProtocolPresenterSetState_t*)data;
-            this->littleState = littleStateFactory->GetMatchingLittleState(state->state_name, sizeof(state->state_name));
-            if (this->littleState == nullptr) this->printer->printf("Failed to get little state for %s\n", state->state_name);
-            else this->printer->printf("Got state for %s\n", state->state_name);
+            RemoteLittleState* newLittleState = littleStateFactory->GetMatchingLittleState(state->state_name, sizeof(state->state_name));
+            if (newLittleState== nullptr) {
+                this->printer->printf("Failed to get little state for %s\n", state->state_name);
+            }
+            else {
+                this->printer->printf("Got state for %s\n", state->state_name);
+                if (this->littleState != nullptr) this->littleState->Stop();
+                newLittleState->Start();
+                this->littleState = newLittleState;
+            }
         }
         else {
             this->printer->printf("Unknown message %d\n", msgType);
+        }
+        // We give the little state the chance to do what it wants with the message
+        if (this->littleState != nullptr) {
+            this->littleState->HandlePresenterMessage(data, data_len);
         }
 
     }
@@ -254,9 +224,17 @@ public:
     }
 
     void ButtonPressed(uint8_t index) override {
-        this->printer->printf("Button %d pressed\n", index);
+        if (littleState == nullptr) return;
+        // If the little state handled the button, don't do anything
+        if (littleState->ButtonPressed(index)) return;
         PRESENTER_REMOTEBUTTONPRESSED(msg, index);
         MeshSend(bridgeMac, (uint8_t*)&msg, sizeof(msg));
-        graphics->TurnOff();
+    }
+    void ButtonReleased(uint8_t index) override {
+        if (littleState == nullptr) return;
+        // If the little state handled the button, don't do anything
+        if (littleState->ButtonPressed(index)) return;
+        PRESENTER_REMOTEBUTTONPRESSED(msg, index);
+        MeshSend(bridgeMac, (uint8_t*)&msg, sizeof(msg));
     }
 };

@@ -62,7 +62,7 @@ const createMainWindow = () => {
 
 };
 
-const createRemoteWindow = () => {
+const createRemoteWindow = (debug = false) => {
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     const remoteWindow = new BrowserWindow({
       width: 350,
@@ -72,11 +72,13 @@ const createRemoteWindow = () => {
       }
     })
     remoteWindow.loadURL(`${MAIN_WINDOW_VITE_DEV_SERVER_URL}/remote.html`);
-    // Open the DevTools.
-    remoteWindow.webContents.openDevTools({
-      mode:'detach',
-      title: "OpenClicker Remote Console"
-    });
+    if (debug) {
+      // Open the DevTools.
+      remoteWindow.webContents.openDevTools({
+        mode:'detach',
+        title: "OpenClicker Remote Console"
+      });
+    }
     remoteWindow.setTitle("OpenClicker Remote")
   }
 }
@@ -172,13 +174,22 @@ const template = [
   {
     label: 'Window',
     submenu: [
-      ...(isDev ? [{
-        label: 'New Remote Window',
-        click: async () => {
-          createRemoteWindow()
+      ...(isDev ? [
+        {
+          label: 'New Remote Window',
+          click: async () => {
+            createRemoteWindow()
+          },
+          accelerator: process.platform === 'darwin' ? 'Shift+Cmd+R' : 'Ctrl+Shift+R',
         },
-        accelerator: process.platform === 'darwin' ? 'Shift+Cmd+R' : 'Ctrl+Shift+R',
-      }]: []),
+        {
+          label: 'New Debug Remote Window',
+          click: async () => {
+            createRemoteWindow(true)
+          },
+          accelerator: process.platform === 'darwin' ? 'Shift+Cmd+Alt+R' : 'Ctrl+Shift+Alt+R',
+        },
+      ]: []),
       { role: 'minimize' },
       { role: 'zoom' },
       { role: 'close' },

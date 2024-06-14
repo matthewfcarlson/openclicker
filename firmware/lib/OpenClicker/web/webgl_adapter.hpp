@@ -46,4 +46,11 @@ public:
         fill_image_tag((float)x, new_y, graphic->tag);
         return true;
     }
+
+    bool DrawText(const char* text, uint32_t x, uint32_t y) override {
+        int fontSize = 26;
+        float new_y = (float)(TFT_HEIGHT - y - fontSize);
+        fill_text(x, new_y, 1.0, 1.0, 1.0, 1.0, text, 0, fontSize, 0);
+        return true;
+    }
 };
