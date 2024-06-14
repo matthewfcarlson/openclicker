@@ -73,10 +73,10 @@ STRUCTS = {
         'state_name': Definitions.char32_little_state,
     },
     PresenterLittleStates.EmojiState.value: {
-        'emoji_choice_1': Definitions.uint16_t,
-        'emoji_choice_2': Definitions.uint16_t,
-        'emoji_choice_3': Definitions.uint16_t,
-        'emoji_choice_4': Definitions.uint16_t,
+        'emoji_choice_1': Definitions.uint32_t,
+        'emoji_choice_2': Definitions.uint32_t,
+        'emoji_choice_3': Definitions.uint32_t,
+        'emoji_choice_4': Definitions.uint32_t,
     },
      PresenterLittleStates.MultipleChoiceState.value: {
         'num_choices': Definitions.uint8_t,

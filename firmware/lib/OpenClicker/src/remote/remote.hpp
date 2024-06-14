@@ -7,11 +7,7 @@
 #include <vector>
 #include <remote/little_states/little_state_factory.hpp>
 // graphics
-#include <images/Alert.h>
-#include <images/Close.h>
-#include <images/Cards.h>
-#include <images/Info.h>
-#include <images/movie-camera_1f3a5.h>
+#include <images.h>
 
 #pragma once
 
@@ -35,10 +31,7 @@ protected:
     bool screenOn = false;
     uint16_t lastBackgroundColor = 0;
 public:
-    const RemoteGraphic_t* GRAPHIC_ALERT_ICON = &Graphics_Alert;
-    const RemoteGraphic_t* GRAPHIC_INFO_ICON = &Graphics_Info;
-    const RemoteGraphic_t* GRAPHIC_CLOSE_ICON = &Graphics_Close;
-    const RemoteGraphic_t* GRAPHIC_CARD_0 = &Graphics_card0;
+    INCLUDE_ALL_IMAGES;
     const RemoteGraphic_t* EMOJI_MOVIE_CAMERA = &Graphics_movie_camera_1f3a5;
     static const uint16_t COLOR_BLACK       = 0x0000;      /*   0,   0,   0 */
     static const uint16_t COLOR_NAVY        = 0x000F;      /*   0,   0, 128 */
