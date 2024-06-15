@@ -1,9 +1,9 @@
 <script setup lang="ts">
 
-import { useSerialPortStore, SerialPortInfos } from "../store/serial";
+import { useSerialPortStore } from "../store/serial";
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const ports = ref([] as SerialPortInfos);
+const ports = ref([]);
 const portTimeout = ref(null);
 const store = useSerialPortStore();
 async function selectPort(port_path: string) {
@@ -11,7 +11,6 @@ async function selectPort(port_path: string) {
 }
 
 async function fetchPorts() {
-  console.log("Fetching ports")
   ports.value = await store.getPorts();
 }
 onMounted(async () => {
@@ -35,7 +34,7 @@ function skipSerial() {
       </div>
       <div class="block" v-for="port in ports">
         <button class="button is-fullwidth is-primary my-3" @click="selectPort(port.path)">
-          {{ port.path }}
+          {{ port.path }} - <i> {{ port.manufacturer }}</i>
         </button>
       </div>
       <button @click="skipSerial" class="button is-fullwidth is-warning my-3">Don't Connect Serial</button>

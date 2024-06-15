@@ -1,6 +1,9 @@
 import { app, BrowserWindow, dialog, ipcMain, IpcMainInvokeEvent, Menu } from 'electron';
 import path from 'path';
 import fs from "fs";
+import { SerialPort } from 'serialport';
+import { ReadlineParser } from '@serialport/parser-readline'
+import type { PortInfo } from '@serialport/bindings-interface';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -34,6 +37,48 @@ async function broadcastEventToAllWindows(senderId: number, eventName:string, me
   })
 }
 
+async function handleSerialListPorts(event: IpcMainInvokeEvent) : Promise<PortInfo[]> {
+  const ports = await SerialPort.list();
+  return ports;
+  }
+  
+let currentPort: SerialPort|null = null;
+let mainWindowId = 1;
+async function handleSerialOpenPort(event: IpcMainInvokeEvent, path: string) : Promise<boolean> {
+  if (currentPort != null) {
+    return false;
+  }
+  console.log("Opening SerialPort at", path)
+  currentPort = new SerialPort({path, baudRate: 115200 });
+  if (currentPort.errored) return false;
+  if (currentPort.closed) return false;
+  const parser = currentPort.pipe(new ReadlineParser({ delimiter: '\r\n' }))
+  parser.on('data', (message) => {
+    BrowserWindow.getAllWindows().filter((x)=>x.id == mainWindowId).forEach((x)=>{
+      x.webContents.send('serial:message', message);
+    });
+  });
+  return true;
+}
+
+async function handleSerialClosePort(event: IpcMainInvokeEvent) : Promise<boolean> {
+  if (currentPort == null) return true;
+  currentPort.close();
+  currentPort = null;
+  console.log("Closing Serial Port")
+  return true;
+}
+
+async function handleSerialMessage(event: IpcMainInvokeEvent, message: string) : Promise<boolean> {
+  if (currentPort == null) return false;
+  console.log("Writing to Serial Port", message)
+  currentPort.write(message);
+  currentPort.write("\r\n");
+  currentPort.drain();
+  return false;
+}
+
+
 const createMainWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -42,13 +87,10 @@ const createMainWindow = () => {
     backgroundColor: "#ccc",
 
     webPreferences: {
-      //preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: false, // allow use with Electron 12+
-      nodeIntegration: true, // to allow require
-      nodeIntegrationInWorker: true,
-      allowRunningInsecureContent: false,
+      preload: path.join(__dirname, './presenter_preload.js'),
     },
   });
+  mainWindowId = mainWindow.id;
 
 
   // and load the index.html of the app.
@@ -103,8 +145,12 @@ app.whenReady().then(() => {
   ipcMain.handle('dialog:openFile', handleFileOpen)
   ipcMain.handle('message-from-presenter', handleMessageFromPresenter)
   ipcMain.handle('message-to-presenter', handleMessageToPresenter)
+  ipcMain.handle('serial:listPorts', handleSerialListPorts)
+  ipcMain.handle('serial:openPort', handleSerialOpenPort)
+  ipcMain.handle('serial:closePort', handleSerialClosePort)
+  ipcMain.handle('serial:message', handleSerialMessage)
   createMainWindow();
-  createRemoteWindow()
+  // createRemoteWindow()
 });
 
 // In this file you can include the rest of your app's specific main process

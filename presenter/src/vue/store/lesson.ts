@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-const ipcRenderer = window.require('electron').ipcRenderer;
 import { LessonPlan, LessonPlanType } from '../../common/LessonStates';
 
 export const useLessonStore = defineStore({
@@ -25,9 +24,13 @@ export const useLessonStore = defineStore({
         rewindLessonState() {
             if (this.canRewind) this.count-= 1;
         },
+        reset() {
+            this.current_lesson = 0;
+            this.count = 0;
+        },
         async attemptFileLoad(): Promise<string> {
             try {
-                const lesson_json = (await ipcRenderer.invoke("dialog:openFile")) as (string|null)
+                const lesson_json = (await (window as any).electronAPI.openFile()) as (string|null)
                 if (lesson_json == null) return "Did not select a file"
                 const raw_json = JSON.parse(lesson_json);
                 return this.attemptLessonLoad(raw_json);

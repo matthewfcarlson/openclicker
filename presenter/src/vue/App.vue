@@ -8,6 +8,16 @@ import SerialSelector from "./components/SerialSelection.vue";
 
 const serialStore = useSerialPortStore();
 const lessonStore = useLessonStore();
+
+// window.onbeforeunload = function(event)
+// {
+//   try{
+//     serialStore.reset();
+//     lessonStore.reset();
+//   }
+//   catch {}
+//   return false;
+// };
 </script>
 
 <template>

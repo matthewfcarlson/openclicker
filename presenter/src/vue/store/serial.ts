@@ -1,36 +1,32 @@
 import { defineStore } from 'pinia'
-const serial = require("serialport"); // eslint-disable-line
+import { ref, computed } from "vue";
+import type { electronAPIType } from '../../electron/presenter_preload';
 
-const serialPortStore = {
-    id: 'serial',
-    state: () => ({
-      setup: false,
-    }),
-    getters: {
-        isReady: (state) => {return state.setup == true},
-    },
-    actions: {
-        async getPorts() {
-            const ports = await serial.SerialPort.list();
-            return ports;
-        },
-        async listenTo(path:string) {
-            // this.api.serialMessageCallback((x)=>{
-            //     console.log(x);
-            // })
-            // await this.api.listenToPort(path);
-            console.log(path);
-            this.setup = true;
-        },
-        skipListen() {
-            this.setup = true;
-        },
-        async reset() {
-            // await this.api.serialReset()
-            this.setup = false
+export const useSerialPortStore = defineStore('serial', () => {
+    const setup = ref(false)
+    const api = (window as any).electronAPI as electronAPIType;
+
+    const isReady = computed(()=> setup.value == true)
+
+    async function getPorts() {
+        const ports = await api.serialPortsList()
+        return ports.filter((x)=>x.manufacturer != undefined);
+    }
+    async function listenTo(path:string) {
+        await api.serialPortClose()
+        if (await api.serialPortOpen(path) == false) {
+            console.error("Failed to open port")
+            return;
+        }
+        setup.value = true;
+    }
+    function skipListen() {
+        this.setup = true;
+    }
+    async function reset() {
+        if (await api.serialPortClose()) {
+            setup.value = false;
         }
     }
-}
-export type SerialPortInfos = Awaited<ReturnType<typeof serialPortStore.actions.getPorts>>
-
-export const useSerialPortStore = defineStore(serialPortStore)
+    return {isReady, getPorts, listenTo, skipListen, reset}
+})

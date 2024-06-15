@@ -55,6 +55,7 @@ STRUCTS = {
     },
     PresenterMessageId.RemoteHeartBeat.value: {
         'battery_level': Definitions.uint8_t_battery,
+        'state_name': Definitions.char32_little_state,
     },
     PresenterMessageId.RemoteRequestState.value: {
         'state_hash1': Definitions.uint32_t,
@@ -69,7 +70,7 @@ STRUCTS = {
     PresenterMessageId.PresenterSetState.value: {
         'state_name': Definitions.char32_little_state,
     },
-     PresenterMessageId.PresenterSetState.value: {
+    PresenterLittleStates.DarkState.value: {
         'state_name': Definitions.char32_little_state,
     },
     PresenterLittleStates.EmojiState.value: {
@@ -228,6 +229,7 @@ class CHeaderFileGen(CommonFileGenBase):
     def write_common_header(self):
         super().write_common_header()
         self.fp.write("#pragma once\n\n")
+        self.fp.write("#pragma pack(push, 1)\n")
         self.fp.write("#ifndef __PRESENTER_PROTOCOL_H__\n")
         self.fp.write("#define __PRESENTER_PROTOCOL_H__\n\n")
         for include in ["stdint.h", "stdlib.h", "stdio.h", "strings.h"]:
@@ -294,6 +296,7 @@ class CHeaderFileGen(CommonFileGenBase):
 
     def write_parsers(self, message_struct_generator):
         self.fp.write("#endif\n")
+        self.fp.write("#pragma pack(pop)\n")
 
 
 class CHelpersFileGen(CommonFileGenBase):
@@ -358,7 +361,12 @@ class CHelpersFileGen(CommonFileGenBase):
                     yield field_name, format_str, None
                 for field_name, field in message_struct['fields'].items():
                     if field[0] in C_TYPE_TO_PRINT:
-                        format_str = "%" + C_TYPE_TO_PRINT[field[0]]
+                        format_type = C_TYPE_TO_PRINT[field[0]]
+                        
+                        if format_type == 's':
+                            format_str = f"\\\"%s\\\""
+                        else:
+                            format_str = f"%{format_type}"
                         yield field_name, format_str, f"msg->{field_name}"
                     elif field[0].endswith("]"):
                         # we need to yield it as a bytes stream

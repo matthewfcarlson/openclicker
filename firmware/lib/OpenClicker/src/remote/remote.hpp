@@ -25,6 +25,7 @@ enum RemoteBigStates {
     RemoteBigError,
 };
 
+typedef std::function<uint32_t(void)> ReadBattery_t;
 
 class RemoteGraphicsTextAdapter: public RemoteGraphicsAdapter {
 private:
@@ -60,10 +61,12 @@ private:
 
     PeriodicTask* bridgeRequestTask;
     PeriodicTask* presenterRequestTask;
+    PeriodicTask* remoteHeartbeatTask;
     RemoteBigStates bigState = RemoteBigInit;
     RemoteLittleState* littleState = nullptr;
     LittleStateFactory* littleStateFactory;
     RemoteGraphicsAdapter* graphics;
+    ReadBattery_t readBatteryFunc = nullptr;
 
     uint8_t bridgeMac[6] = {0};
 
@@ -82,6 +85,19 @@ private:
         int status = MeshSend(bridgeMac, (uint8_t*)&msg, sizeof(msg));
         if (status != MESH_OK) {
             this->printer->printf("Failed to request state: %x\n", status);
+        }
+    }
+
+    void MeshPresenterHeartbeat() {
+        char stateName[32] = {0};
+        uint32_t batteryMv = 5000; // this is millivolts
+        if (readBatteryFunc) batteryMv = readBatteryFunc();
+        uint8_t batteryLevel = batteryMv / 50; // 50mv per level
+        if (littleState != nullptr) littleState->GetStateName(stateName, sizeof(stateName));
+        PRESENTER_REMOTEHEARTBEAT(msg, (batteryLevel / 50), stateName);
+        int status = MeshSend(bridgeMac, (uint8_t*)&msg, sizeof(msg));
+        if (status != MESH_OK) {
+            this->printer->printf("Failed to send heartbeat: %x\n", status);
         }
     }
 
@@ -108,10 +124,11 @@ private:
 
 public:
 
-    RemoteDevice(Print* printer, Callback rebootFunc, const uint8_t* mac = nullptr, RemoteGraphicsAdapter* graphics = nullptr): BaseDevice(printer, rebootFunc, mac)
+    RemoteDevice(Print* printer, Callback rebootFunc, const uint8_t* mac = nullptr, RemoteGraphicsAdapter* graphics = nullptr, ReadBattery_t battFunc = nullptr): BaseDevice(printer, rebootFunc, mac), readBatteryFunc(battFunc)
     {
         bridgeRequestTask = new PeriodicTask(1000, std::bind(&RemoteDevice::MeshRequestBridge, this));
         presenterRequestTask = new PeriodicTask(1000, std::bind(&RemoteDevice::MeshPresenterRequestState, this));
+        remoteHeartbeatTask = new PeriodicTask(10000, std::bind(&RemoteDevice::MeshPresenterHeartbeat, this));
         if (graphics == nullptr) this->graphics = new RemoteGraphicsTextAdapter(printer);
         else this->graphics = graphics;
         this->graphics->PreLoad();
@@ -156,6 +173,10 @@ public:
         else if (currentBigState == RemoteBigRebooting) {
             // Reboot the whole system
             this->Reboot();
+        }
+        else if (currentBigState == RemoteBigParticipating) {
+            // Heartbeat
+            this->remoteHeartbeatTask->Check();
         }
 
         // Check if we have a low battery, if so

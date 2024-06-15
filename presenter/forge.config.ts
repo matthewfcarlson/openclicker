@@ -71,6 +71,10 @@ const config: ForgeConfig = {
           entry: 'src/electron/remote_preload.ts',
           config: 'vite.preload.config.ts',
         },
+        {
+          entry: 'src/electron/presenter_preload.ts',
+          config: 'vite.preload.config.ts',
+        },
       ],
       renderer: [
         {

@@ -1351,7 +1351,7 @@ var wasmExports = createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
 var _create_RemoteButtonPressed = Module['_create_RemoteButtonPressed'] = createExportWrapper('create_RemoteButtonPressed', 2);
 var _create_BridgeButtonPressed = Module['_create_BridgeButtonPressed'] = createExportWrapper('create_BridgeButtonPressed', 2);
-var _create_RemoteHeartBeat = Module['_create_RemoteHeartBeat'] = createExportWrapper('create_RemoteHeartBeat', 2);
+var _create_RemoteHeartBeat = Module['_create_RemoteHeartBeat'] = createExportWrapper('create_RemoteHeartBeat', 3);
 var _create_RemoteRequestState = Module['_create_RemoteRequestState'] = createExportWrapper('create_RemoteRequestState', 5);
 var _create_PresenterSetStateDarkState = Module['_create_PresenterSetStateDarkState'] = createExportWrapper('create_PresenterSetStateDarkState', 1);
 var _create_PresenterSetStateMultipleChoiceState = Module['_create_PresenterSetStateMultipleChoiceState'] = createExportWrapper('create_PresenterSetStateMultipleChoiceState', 3);

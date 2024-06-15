@@ -12,12 +12,24 @@
 // I'm basically implementing a c++ class with pointers, shrug
 #ifdef ISBRIDGE
 #include "bridge/bridge.hpp"
+#include "uart.hpp"
 #include "s2_pin_config.h"
-BaseDevice* device = new BridgeDevice(&Serial, abort);
+BridgeTransport* transport = new BridgeUartTransport();
+BaseDevice* device = new BridgeDevice(&Serial, abort, transport);
 #else
+#include <esp_adc_cal.h>
 #include "remote/remote.hpp"
 #include "tft.hpp"
-BaseDevice* device = new RemoteDevice(&Serial, abort, nullptr, new RemoteGraphicsTFT());
+uint32_t read_battery() {
+    esp_adc_cal_characteristics_t adc_chars;
+    // Get the internal calibration value of the chip
+    esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
+    uint32_t raw = analogRead(PIN_BAT_VOLT);
+    uint32_t v1 = esp_adc_cal_raw_to_voltage(raw, &adc_chars) * 2; //The partial pressure is one-half
+    return v1;
+}
+BaseDevice* device = new RemoteDevice(&Serial, abort, nullptr, new RemoteGraphicsTFT(), read_battery);
+
 #endif
 
 OneButton button1(PIN_BUTTON_1, true);

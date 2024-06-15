@@ -35,7 +35,7 @@ public:
             hexByte[0] = *str++;
             hexByte[1] = *str++;
             current_msg_size -= 2;
-            
+
             // Move past the colon separator if it's not the last byte
             if (i < 5) {
                 if (*str != ':') {
@@ -140,7 +140,8 @@ public:
         // Serial print this to the console
         char message[512] = {0};
         ConvertMessageToString(from_mac_addr, PRESENTER_MAC, data, data_len, message, sizeof(message));
-        printf("PRESENTER %d: %s\n", data[0], message);
+        printf("PRESENTER %d\n", data[0]);
+        printf("%s\n", message);
     }
 
     virtual void SendTextMessageToBridge(const char* msg, uint32_t msg_size) {
@@ -160,6 +161,8 @@ public:
         this->bridgeCallback = callback;
     }
 
+    virtual void CheckForMessages() {}
+
 };
 
 class BridgeDevice: public BaseDevice {
@@ -168,11 +171,7 @@ private:
 
 public:
 
-    BridgeDevice(Print* printer, Callback rebootFunc, BridgeTransport* transport = nullptr, const uint8_t* mac = nullptr): BaseDevice(printer, rebootFunc, mac) {
-        if (transport == nullptr ){
-            // Create default serial transport
-            transport = new BridgeTransport();
-        }
+    BridgeDevice(Print* printer, Callback rebootFunc, BridgeTransport* transport, const uint8_t* mac = nullptr): BaseDevice(printer, rebootFunc, mac) {
         auto callback = std::bind(&BridgeDevice::PresenterOnReceive, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
         transport->RegisterReceiveCallback(callback);
         this->transport = transport;
@@ -182,12 +181,12 @@ public:
         // TODO: how to do serial
         this->printer->printf("Hello from the bridge\n");
     }
+
     void Setup() override {
-        
     }
 
     void Loop() override {
-
+        transport->CheckForMessages();
     }
 
     void PresenterOnReceive(const uint8_t* mac_addr, const uint8_t* data, uint32_t data_len) {
@@ -206,7 +205,7 @@ public:
     }
 
     void MeshOnReceive(const uint8_t* mac_addr, const uint8_t *data, uint32_t data_len) override {
-        
+
         // output.concat(macStr);
         // output.concat(' ');
         if (data_len == 0) {

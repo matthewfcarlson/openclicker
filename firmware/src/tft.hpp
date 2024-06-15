@@ -89,7 +89,9 @@ public:
 
     bool DrawText(const char* text, uint32_t x, uint32_t y) {
         tft.setTextSize(1);
-        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        // TODO: pick black or white based on the background color
+        uint16_t foreground_color = (lastBackgroundColor == TFT_BLACK) ? TFT_WHITE : TFT_BLACK;
+        tft.setTextColor(foreground_color, lastBackgroundColor);
         tft.drawString(text, x, y, 4);
         return true;
     }

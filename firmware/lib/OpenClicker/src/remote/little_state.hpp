@@ -99,6 +99,8 @@ public:
         return false;
     }
 
+    virtual void GetStateName(char* name, uint32_t name_len) = 0;
+
     virtual void Start() = 0;
     virtual void Stop() = 0;
 
