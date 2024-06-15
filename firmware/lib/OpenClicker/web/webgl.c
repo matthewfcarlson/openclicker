@@ -128,7 +128,6 @@ void EMSCRIPTEN_KEEPALIVE clear_screen(float r, float g, float b, float a)
 
 static void fill_textured_rectangle(float x0, float y0, float x1, float y1, float r, float g, float b, float a, GLuint texture)
 {
-  printf("[gfx] Drawing at %f, %f to %f, %f\n", x0, y0, x1, y1);
   float mat[16] = { (x1-x0)*pixelWidth, 0, 0, 0, 0, (y1-y0)*pixelHeight, 0, 0, 0, 0, 1, 0, (x0*pixelWidth)-1.f, (y0*pixelHeight)-1.f, 0, 1};
   glUniformMatrix4fv(matPos, 1, 0, mat);
   glUniform4f(colorPos, r, g, b, a);

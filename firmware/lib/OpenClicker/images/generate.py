@@ -113,7 +113,7 @@ def GenerateAllImagesHeaderFile(fp: TextIOWrapper, output_dict: dict):
 
     fp.write("const RemoteGraphic_t* GetEmojiByUnicode(uint32_t unicode) {\n")
     for image in output_dict["images"]["emojis"]:
-        fp.write(f"   if (unicode == {image['unicode'][0]}) return &{image['struct_name']};\n")
+        fp.write(f"   if (unicode == {image['unicode'][0]:#x}) return &{image['struct_name']};\n")
     fp.write("   return NULL;\n")
     fp.write("}\n")
     fp.write("\n\n")

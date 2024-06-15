@@ -21,7 +21,7 @@ export const useSerialPortStore = defineStore('serial', () => {
         setup.value = true;
     }
     function skipListen() {
-        this.setup = true;
+        setup.value = true;
     }
     async function reset() {
         if (await api.serialPortClose()) {

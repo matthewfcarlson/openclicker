@@ -15,6 +15,10 @@ class PresenterMessageId(enum.IntEnum):
     # These are the message ids for the presenter
     # The first message id is MIN_PRESENTER_MESSAGE_ID
     RemoteButtonPressed = enum.auto(),
+    RemoteRequestEmojis = enum.auto(),
+    PresenterOfferEmojiOptions = enum.auto(),
+    RemotePickEmojis = enum.auto(),
+    PresenterAssignEmojis = enum.auto(),
     BridgeButtonPressed = enum.auto(),
     RemoteHeartBeat = enum.auto(),
     RemoteRequestState = enum.auto(),
@@ -34,9 +38,9 @@ class PresenterLittleStates(enum.StrEnum):
     # these are the little states that the presenter can tell remotes to be in
     DarkState = 'dark',
     MultipleChoiceState = 'mc',
-    EmojiState = 'emoji',
 
 class Definitions:
+    bool = ['bool','z.number().int().gte(0).lte(1)', 'boolean']
     uint8_t = ['uint8_t','z.number().int().nonnegative().lte(255)', '8bit unsigned integer']
     uint8_t_button = ['uint8_t','z.number().int().nonnegative().lt(4)', '8bit unsigned integer between 0 and 4']
     uint8_t_battery = ['uint8_t','z.number().int().nonnegative().lt(100)', '8bit unsigned integer between 0 and 100']
@@ -57,6 +61,22 @@ STRUCTS = {
         'battery_level': Definitions.uint8_t_battery,
         'state_name': Definitions.char32_little_state,
     },
+    PresenterMessageId.PresenterOfferEmojiOptions.value: {
+        'emoji_choice_1': Definitions.uint32_t,
+        'emoji_choice_2': Definitions.uint32_t,
+        'emoji_choice_3': Definitions.uint32_t,
+        'minimum_emojis': Definitions.uint8_t,
+    },
+    PresenterMessageId.RemotePickEmojis.value: {
+        'emoji_choice_1': Definitions.bool,
+        'emoji_choice_2': Definitions.bool,
+        'emoji_choice_3': Definitions.bool,
+    },
+    PresenterMessageId.PresenterAssignEmojis.value: {
+        'emoji_choice_1': Definitions.uint32_t,
+        'emoji_choice_2': Definitions.uint32_t,
+        'emoji_choice_3': Definitions.uint32_t,
+    },
     PresenterMessageId.RemoteRequestState.value: {
         'state_hash1': Definitions.uint32_t,
         'state_hash2': Definitions.uint32_t,
@@ -73,12 +93,6 @@ STRUCTS = {
     PresenterLittleStates.DarkState.value: {
         'state_name': Definitions.char32_little_state,
     },
-    PresenterLittleStates.EmojiState.value: {
-        'emoji_choice_1': Definitions.uint32_t,
-        'emoji_choice_2': Definitions.uint32_t,
-        'emoji_choice_3': Definitions.uint32_t,
-        'emoji_choice_4': Definitions.uint32_t,
-    },
      PresenterLittleStates.MultipleChoiceState.value: {
         'num_choices': Definitions.uint8_t,
         'question_text': Definitions.char64,
@@ -86,6 +100,7 @@ STRUCTS = {
 }
 
 C_TYPE_TO_PRINT = {
+    'bool': 'u',
     'uint8_t': 'u',
     'uint8_t[6]': 's',
     'uint16_t': 'u',

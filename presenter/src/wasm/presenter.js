@@ -28,7 +28,7 @@ var readyPromise = new Promise((resolve, reject) => {
   readyPromiseResolve = resolve;
   readyPromiseReject = reject;
 });
-["_message_string_to_json","_message_json_to_string","_generate_base64_little_state_hash_json","_create_RemoteButtonPressed","_create_BridgeButtonPressed","_create_RemoteHeartBeat","_create_RemoteRequestState","_create_PresenterSetStateDarkState","_create_PresenterSetStateMultipleChoiceState","_create_PresenterSetStateEmojiState","_create_PresenterSetState","_create_PresenterRemotePacket","_memory","___indirect_function_table","onRuntimeInitialized"].forEach((prop) => {
+["_message_string_to_json","_message_json_to_string","_generate_base64_little_state_hash_json","_create_RemoteButtonPressed","_create_RemoteRequestEmojis","_create_PresenterOfferEmojiOptions","_create_RemotePickEmojis","_create_PresenterAssignEmojis","_create_BridgeButtonPressed","_create_RemoteHeartBeat","_create_RemoteRequestState","_create_PresenterSetStateDarkState","_create_PresenterSetStateMultipleChoiceState","_create_PresenterSetState","_create_PresenterRemotePacket","_memory","___indirect_function_table","onRuntimeInitialized"].forEach((prop) => {
   if (!Object.getOwnPropertyDescriptor(readyPromise, prop)) {
     Object.defineProperty(readyPromise, prop, {
       get: () => abort('You are getting ' + prop + ' on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js'),
@@ -1350,12 +1350,15 @@ var wasmImports = {
 var wasmExports = createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
 var _create_RemoteButtonPressed = Module['_create_RemoteButtonPressed'] = createExportWrapper('create_RemoteButtonPressed', 2);
+var _create_RemoteRequestEmojis = Module['_create_RemoteRequestEmojis'] = createExportWrapper('create_RemoteRequestEmojis', 1);
+var _create_PresenterOfferEmojiOptions = Module['_create_PresenterOfferEmojiOptions'] = createExportWrapper('create_PresenterOfferEmojiOptions', 5);
+var _create_RemotePickEmojis = Module['_create_RemotePickEmojis'] = createExportWrapper('create_RemotePickEmojis', 4);
+var _create_PresenterAssignEmojis = Module['_create_PresenterAssignEmojis'] = createExportWrapper('create_PresenterAssignEmojis', 4);
 var _create_BridgeButtonPressed = Module['_create_BridgeButtonPressed'] = createExportWrapper('create_BridgeButtonPressed', 2);
 var _create_RemoteHeartBeat = Module['_create_RemoteHeartBeat'] = createExportWrapper('create_RemoteHeartBeat', 3);
 var _create_RemoteRequestState = Module['_create_RemoteRequestState'] = createExportWrapper('create_RemoteRequestState', 5);
 var _create_PresenterSetStateDarkState = Module['_create_PresenterSetStateDarkState'] = createExportWrapper('create_PresenterSetStateDarkState', 1);
 var _create_PresenterSetStateMultipleChoiceState = Module['_create_PresenterSetStateMultipleChoiceState'] = createExportWrapper('create_PresenterSetStateMultipleChoiceState', 3);
-var _create_PresenterSetStateEmojiState = Module['_create_PresenterSetStateEmojiState'] = createExportWrapper('create_PresenterSetStateEmojiState', 5);
 var _create_PresenterSetState = Module['_create_PresenterSetState'] = createExportWrapper('create_PresenterSetState', 2);
 var _create_PresenterRemotePacket = Module['_create_PresenterRemotePacket'] = createExportWrapper('create_PresenterRemotePacket', 2);
 var _message_string_to_json = Module['_message_string_to_json'] = createExportWrapper('message_string_to_json', 1);

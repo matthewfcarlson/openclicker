@@ -56,6 +56,13 @@ void wrapper_esp_send_callback(const uint8_t* mac_addr, esp_now_send_status_t st
 }
 
 void setup() {
+
+#ifdef PIN_POWER_ON
+    // This is a power pin, if we ever need to shutdown the board, just set this pin to low
+    // https://github.com/Xinyuan-LilyGO/T-Display-S3/issues/155
+    pinMode(PIN_POWER_ON, OUTPUT);
+    digitalWrite(PIN_POWER_ON, HIGH);
+#endif
     Serial.begin(115200);
     // If you need to do an pre-setup, call that
     uint8_t mac_address[6] = {0};

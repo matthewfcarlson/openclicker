@@ -14,7 +14,8 @@ private:
         printf("[gfx] web power on\n");
     }
 protected:
-    void PreloadImage(const RemoteGraphic_t* graphic) override{
+    void PreloadImage(const RemoteGraphic_t* graphic) override {
+        printf("Preloading image %s\n", graphic->tag);
         load_image_by_tag(graphic->tag, graphic->data, graphic->width, graphic->height);
     }
 public:
@@ -40,6 +41,10 @@ public:
         return true;
     }
     bool DrawImage(const RemoteGraphic_t* graphic, uint32_t x, uint32_t y) override {
+        if (graphic == nullptr) {
+            printf("[gfx] No graphic to draw\n");
+            return false;
+        }
         printf("[gfx] Drawing image %s at %d %d. %d,%d\n", graphic->tag, x, y, graphic->width, graphic->height);
         // We need to flip it since we draw from the bottom right corner
         float new_y = (float)(TFT_HEIGHT - y - graphic->height);
