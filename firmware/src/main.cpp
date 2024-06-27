@@ -28,8 +28,8 @@ uint32_t read_battery() {
     uint32_t v1 = esp_adc_cal_raw_to_voltage(raw, &adc_chars) * 2; //The partial pressure is one-half
     return v1;
 }
-BaseDevice* device = new RemoteDevice(&Serial, abort, nullptr, new RemoteGraphicsTFT(), read_battery);
-
+RemoteDevice* remote = new RemoteDevice(&Serial, abort, nullptr, new RemoteGraphicsTFT());
+BaseDevice* device = remote;
 #endif
 
 OneButton button1(PIN_BUTTON_1, true);
@@ -83,6 +83,11 @@ void setup() {
     wrapper_esp_add_peer(BROADCAST_MAC, MESH_DEFAULT_CHANNEL);
     device->MeshRegisterSend(esp_now_send);
     device->MeshRegisterAddPeer(wrapper_esp_add_peer);
+#ifndef ISBRIDGE
+    remote->RegisterBatteryFunc(read_battery);
+    remote->RegisterMinHeapFunc(esp_get_minimum_free_heap_size);
+    remote->RegisterFreeHeapFunc(esp_get_free_heap_size);
+#endif
     // Call setup
     device->Setup();
     // Setup mesh receivers

@@ -28,6 +28,7 @@ enum RemoteBigStates {
 // TODO: should big states also be their own wrapper similar to small states?
 
 typedef std::function<uint32_t(void)> ReadBattery_t;
+typedef std::function<uint32_t(void)> GetHeapSize_t; 
 
 class RemoteGraphicsTextAdapter: public RemoteGraphicsAdapter {
 private:
@@ -70,6 +71,8 @@ private:
     LittleStateFactory* littleStateFactory;
     RemoteGraphicsAdapter* graphics;
     ReadBattery_t readBatteryFunc = nullptr;
+    GetHeapSize_t getHeapSizeFunc = nullptr;
+    GetHeapSize_t getMinHeapSizeFunc = nullptr;
 
     // The mac address of the bridge we connected to
     uint8_t bridgeMac[6] = {0};
@@ -146,7 +149,7 @@ private:
 
 public:
 
-    RemoteDevice(Print* printer, Callback rebootFunc, const uint8_t* mac = nullptr, RemoteGraphicsAdapter* graphics = nullptr, ReadBattery_t battFunc = nullptr): BaseDevice(printer, rebootFunc, mac), readBatteryFunc(battFunc)
+    RemoteDevice(Print* printer, Callback rebootFunc, const uint8_t* mac = nullptr, RemoteGraphicsAdapter* graphics = nullptr): BaseDevice(printer, rebootFunc, mac)
     {
         bridgeRequestTask = new PeriodicTask(1000, std::bind(&RemoteDevice::MeshRequestBridge, this));
         presenterRequestLittleStateTask = new PeriodicTask(1000, std::bind(&RemoteDevice::MeshPresenterRequestState, this));
@@ -160,6 +163,16 @@ public:
 
     RemoteBigStates getBigState() {
         return bigState;
+    }
+
+    void RegisterBatteryFunc(ReadBattery_t readBatteryFunc) {
+        this->readBatteryFunc = readBatteryFunc;
+    }
+    void RegisterMinHeapFunc(GetHeapSize_t getMinHeapSizeFunc) {
+        this->getMinHeapSizeFunc = getMinHeapSizeFunc;
+    }
+    void RegisterFreeHeapFunc(GetHeapSize_t getHeapSizeFunc) {
+        this->getHeapSizeFunc = getHeapSizeFunc;
     }
 
     void PreSetup() override {

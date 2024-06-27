@@ -60,6 +60,8 @@ STRUCTS = {
     PresenterMessageId.RemoteHeartBeat.value: {
         'battery_level': Definitions.uint8_t_battery,
         'state_name': Definitions.char32_little_state,
+        'min_heap': Definitions.uint32_t,
+        'free_heap': Definitions.uint32_t,
     },
     PresenterMessageId.PresenterOfferEmojiOptions.value: {
         'emoji_choice_1': Definitions.uint32_t,
