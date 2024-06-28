@@ -66,11 +66,11 @@ public:
         // TODO: explode in a better way
         if (msg == nullptr || msg_size < 3) return;
         bzero(msg, msg_size);
-        strncat(msg, "MSG=", msg_size);
-        strncat(msg, from_mac, msg_size);
-        strncat(msg, "->", msg_size);
-        strncat(msg, to_mac, msg_size);
-        strncat(msg, " ", msg_size);
+        strncat(msg, "MSG=", 5);
+        strncat(msg, from_mac, 18);
+        strncat(msg, "->", 2);
+        strncat(msg, to_mac, 18);
+        strncat(msg, " ", 1);
         size_t base64_len = 0;
         unsigned char* base64_str = base64_encode(data, data_len, &base64_len);
         strncat(msg, (const char*)base64_str, msg_size);
